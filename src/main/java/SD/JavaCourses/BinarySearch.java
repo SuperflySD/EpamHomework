@@ -1,4 +1,4 @@
-package BinarySearch;
+package SD.JavaCourses;
 
 
 public class BinarySearch {

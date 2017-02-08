@@ -1,4 +1,4 @@
-package MergeSortLoop;
+package SD.JavaCourses;
 
 
 import java.util.Arrays;

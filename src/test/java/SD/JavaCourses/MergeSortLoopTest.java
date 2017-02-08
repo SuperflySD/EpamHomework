@@ -1,5 +1,6 @@
-package MergeSortLoop;
+package SD.JavaCourses;
 
+import SD.JavaCourses.MergeSortLoop;
 import org.junit.Test;
 
 import java.util.Arrays;

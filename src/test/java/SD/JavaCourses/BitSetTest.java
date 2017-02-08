@@ -1,6 +1,9 @@
-package BitSet;
-
+package SD.JavaCourses;
+import SD.JavaCourses.BitSet;
 import org.junit.Test;
+
+import java.util.ArrayList;
+
 import static org.junit.Assert.*;
 
 
@@ -12,12 +15,12 @@ public class BitSetTest {
     public void add() throws Exception {
         bs.add(2,4,6,7,8);
 
-        for (int i=-15000;i<19000;i+=65) {
-           //add and contains tests
+        for (int i=0;i<64;i++) {
+
             bs.add(i);
             assertTrue (bs.contains(i));
             assertFalse(bs.contains(i-77));
-            //remove test
+
             bs.remove(i);
             assertFalse(bs.contains(i));
         }
@@ -25,24 +28,26 @@ public class BitSetTest {
 
     @Test
     public void getAllValues()throws Exception {
-        for (int i=-100; i<=100;i++) {
+        for (int i=-100; i<=100;i+=2) {
             bs.add(i);
 
         }
-        int i=-100;
-        System.out.println(bs.getAllValues());
+        int i=-102;
+
         for (int val: bs.getAllValues()) {
-            assertEquals("" +i+"  ", i++, val);
+            assertEquals("" +i+"  ", i+=2, val);
+            System.out.print(val + " ");
         }
+
 
     }
 
     @Test
-    public void union() throws Exception {
-          for (int i=-65;i<100;i++)
+    public void unite() throws Exception {
+          for (int i=-11;i<1;i++)
           additionalSet.add(i);
 
-        for (int i=-650;i<1007;i+=17)
+        for (int i=-4;i<5;i++)
             bs.add(i);
 
         BitSet newUnion = bs.unite(additionalSet);
@@ -51,25 +56,25 @@ public class BitSetTest {
 
     @Test
     public void intersect() throws Exception {
-        bs.add(-5,0,6);
+        bs.add(1);
         additionalSet.add(-7,-5,6,0,8,9);
-        bs.intersect(additionalSet);
-        System.out.println(bs.getAllValues());
+       BitSet inter  = bs.intersect(additionalSet);
+        System.out.println(inter.getAllValues());
     }
     @Test
     public void differ() throws Exception {
-        bs.add(-5,0,6);
+        bs.add(-5,0,6,11);
         additionalSet.add(-7,-5,6,0,8,9);
-        bs.difference(additionalSet);
-        System.out.println(bs.getAllValues());
+        BitSet differ = bs.difference(additionalSet);
+        System.out.println(differ.getAllValues());
     }
     @Test
     public void isSubsetOf() throws Exception {
-        bs.add(-3,0,9,5,8);
+        bs.add(-3,0,9,5,8,77);
         additionalSet.add(8,5,9,-3,0);
-        System.out.println(additionalSet.isSubsetOf(bs));
-
-
+        assertTrue(additionalSet.isSubsetOf(bs));
+        additionalSet.add(-5);
+        assertFalse(additionalSet.isSubsetOf(bs));
     }
 
 

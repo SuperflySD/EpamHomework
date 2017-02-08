@@ -1,5 +1,6 @@
-package BinarySearch;
+package SD.JavaCourses;
 
+import SD.JavaCourses.BinarySearch;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
