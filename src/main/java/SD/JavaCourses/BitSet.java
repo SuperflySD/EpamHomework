@@ -19,7 +19,7 @@ public class BitSet {
                     positiveData = Arrays.copyOfRange(positiveData, 0, quotient + 1);
                 }
                 positiveData[quotient] |= 1L << remainder;
-                // System.out.println(Long.toBinaryString(positiveData[quotient]));
+
             } else {
                 quotient = Math.abs(quotient);
                 if (quotient >= negativeData.length) {
@@ -76,7 +76,7 @@ public class BitSet {
         return arr;
     }
 
-    public BitSet unite (BitSet inputSet) throws NoSuchFieldException, IllegalAccessException {
+    public BitSet unite (BitSet inputSet) {
          BitSet retSet = new BitSet();
         int more = negativeData.length >= inputSet.negativeData.length ? negativeData.length : inputSet.negativeData.length;
         int less = negativeData.length  < inputSet.negativeData.length ? negativeData.length : inputSet.negativeData.length;
@@ -91,7 +91,7 @@ public class BitSet {
         return retSet;
     }
 
-    public BitSet intersect (BitSet inputSet) throws NoSuchFieldException, IllegalAccessException{
+    public BitSet intersect (BitSet inputSet){
         BitSet retSet = new BitSet();
         int more = negativeData.length >= inputSet.negativeData.length ? negativeData.length : inputSet.negativeData.length;
         int less = negativeData.length  < inputSet.negativeData.length ? negativeData.length : inputSet.negativeData.length;
@@ -107,7 +107,7 @@ public class BitSet {
     }
 
 
-    public BitSet difference(BitSet inputSet) throws NoSuchFieldException, IllegalAccessException{
+    public BitSet difference(BitSet inputSet){
         BitSet retSet = new BitSet();
         int more = negativeData.length >= inputSet.negativeData.length ? negativeData.length : inputSet.negativeData.length;
         int less = negativeData.length  < inputSet.negativeData.length ? negativeData.length : inputSet.negativeData.length;
@@ -122,7 +122,7 @@ public class BitSet {
         return retSet;
     }
 
-    public boolean isSubsetOf(BitSet inputSet) throws NoSuchFieldException, IllegalAccessException{
+    public boolean isSubsetOf(BitSet inputSet){
         BitSet intersectedSet = intersect(inputSet);
         return  Arrays.equals(intersectedSet.negativeData,negativeData) &&
                 Arrays.equals(intersectedSet.positiveData,positiveData);
@@ -144,6 +144,5 @@ public class BitSet {
             remainder = (dividend+1) % 64;
         }
     }
-
 
 }
