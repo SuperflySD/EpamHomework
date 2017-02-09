@@ -9,7 +9,6 @@ public class BitSet {
     private long [] negativeData = new long [1];
     private  int quotient;
     private  int remainder;
-    private long counter = 0;
 
     public void add(int... i) {
         for (int value : i) {
@@ -27,7 +26,6 @@ public class BitSet {
                 }
                 negativeData[quotient] |= 1L << (-remainder);
             }
-            counter++;
         }
     }
      public boolean contains(int value) {
@@ -57,49 +55,54 @@ public class BitSet {
             quotient = Math.abs(quotient);
             negativeData[quotient] = negativeData[quotient] & 0L << remainder;
         }
-        counter--;
     }
 
-    public int[] getAllValues () {
-       int[] arr = new int[(int)counter];
-       int count=0;
+    public ArrayList<Integer> getAllValues () {
+    ArrayList<Integer> list = new ArrayList<Integer> (); 
         for (int i = negativeData.length; i >= 0; i--)
             for (int j = 64; j > 0; j--) {
                 if (contains(-i*64-j))
-                    arr[count++] = (-i*64-j);
+                    list.add (-i*64-j);
             }
         for (int i = 0; i <= positiveData.length; i++)
             for (int j = 0; j < 64 ; j++) {
                 if (contains(i*64+j))
-                    arr[count++]=(i*64+j);
+                    list.add(i*64+j);
             }
-        return arr;
+        return list;
     }
 
     public BitSet unite (BitSet inputSet) {
-         BitSet retSet = new BitSet();
-        int more = negativeData.length >= inputSet.negativeData.length ? negativeData.length : inputSet.negativeData.length;
+          BitSet retSet = new BitSet();
+        if (negativeData.length >= inputSet.negativeData.length) 
+            retSet.negativeData = Arrays.copyOf(negativeData, negativeData.length);
+         else
+            retSet.negativeData = Arrays.copyOf(inputSet.negativeData, inputSet.negativeData.length);
+        
         int less = negativeData.length  < inputSet.negativeData.length ? negativeData.length : inputSet.negativeData.length;
-        retSet.negativeData = new long [more];
         for (int i=0;i<less;i++)
-            retSet.negativeData[i] = negativeData[i] | inputSet.negativeData[i];
-
-        retSet.positiveData = new long [more];
+                 retSet.negativeData[i] = negativeData[i] | inputSet.negativeData[i];
+            
+        if (positiveData.length >= inputSet.positiveData.length) 
+            retSet.positiveData = Arrays.copyOf(positiveData, positiveData.length);
+        else
+            retSet.positiveData = Arrays.copyOf(inputSet.positiveData, inputSet.positiveData.length);
+        
+        less = positiveData.length  < inputSet.positiveData.length ? positiveData.length : inputSet.positiveData.length;
         for (int i=0;i<less;i++)
-            retSet.positiveData[i] = positiveData[i] | inputSet.positiveData[i];
-
+                 retSet.positiveData[i] = positiveData[i] | inputSet.positiveData[i];
         return retSet;
     }
 
     public BitSet intersect (BitSet inputSet){
         BitSet retSet = new BitSet();
-        int more = negativeData.length >= inputSet.negativeData.length ? negativeData.length : inputSet.negativeData.length;
         int less = negativeData.length  < inputSet.negativeData.length ? negativeData.length : inputSet.negativeData.length;
-        retSet.negativeData = new long [more];
+        retSet.negativeData = new long [less];
         for (int i=0;i<less;i++)
             retSet.negativeData[i] = negativeData[i] & inputSet.negativeData[i];
 
-        retSet.positiveData = new long [more];
+        less = positiveData.length  < inputSet.positiveData.length ? positiveData.length : inputSet.positiveData.length;
+        retSet.positiveData = new long [less];
         for (int i=0;i<less;i++)
             retSet.positiveData[i] = positiveData[i] & inputSet.positiveData[i];
 
@@ -109,16 +112,23 @@ public class BitSet {
 
     public BitSet difference(BitSet inputSet){
         BitSet retSet = new BitSet();
-        int more = negativeData.length >= inputSet.negativeData.length ? negativeData.length : inputSet.negativeData.length;
+        if (negativeData.length >= inputSet.negativeData.length) 
+            retSet.negativeData = Arrays.copyOf(negativeData, negativeData.length);
+         else
+            retSet.negativeData = Arrays.copyOf(inputSet.negativeData, inputSet.negativeData.length);
+        
         int less = negativeData.length  < inputSet.negativeData.length ? negativeData.length : inputSet.negativeData.length;
-        retSet.negativeData = new long [more];
         for (int i=0;i<less;i++)
-            retSet.negativeData[i] = negativeData[i] ^ inputSet.negativeData[i];
-
-        retSet.positiveData = new long [more];
+                 retSet.negativeData[i] = negativeData[i] ^ inputSet.negativeData[i];
+            
+        if (positiveData.length >= inputSet.positiveData.length) 
+            retSet.positiveData = Arrays.copyOf(positiveData, positiveData.length);
+        else
+            retSet.positiveData = Arrays.copyOf(inputSet.positiveData, inputSet.positiveData.length);
+        
+        less = positiveData.length  < inputSet.positiveData.length ? positiveData.length : inputSet.positiveData.length;
         for (int i=0;i<less;i++)
-            retSet.positiveData[i] = positiveData[i] ^ inputSet.positiveData[i];
-
+                 retSet.positiveData[i] = positiveData[i] ^ inputSet.positiveData[i];
         return retSet;
     }
 
@@ -129,7 +139,12 @@ public class BitSet {
     }
 
 
-    public long countElements(){
+    public int countElements(){
+       int counter=0;
+       for (long unit: negativeData) 
+            counter+=Long.bitCount(unit);
+       for (long unit: positiveData) 
+            counter+=Long.bitCount(unit);      
         return counter;
     }
 
@@ -146,3 +161,5 @@ public class BitSet {
     }
 
 }
+
+
