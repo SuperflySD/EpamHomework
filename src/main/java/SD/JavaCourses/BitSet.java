@@ -51,10 +51,9 @@ public class BitSet {
         divideBy64(value);
         if (value >= 0)
            positiveData[quotient] = positiveData[quotient]&0L<<remainder;
-        else {
-            quotient = Math.abs(quotient);
-            negativeData[quotient] = negativeData[quotient] & 0L << remainder;
-        }
+        else
+            negativeData[-quotient] = negativeData[-quotient] & 0L << remainder;
+
     }
 
     public ArrayList<Integer> getAllValues () {
@@ -73,23 +72,17 @@ public class BitSet {
     }
 
     public BitSet unite (BitSet inputSet) {
-          BitSet retSet = new BitSet();
-        if (negativeData.length >= inputSet.negativeData.length) 
-            retSet.negativeData = Arrays.copyOf(negativeData, negativeData.length);
-         else
-            retSet.negativeData = Arrays.copyOf(inputSet.negativeData, inputSet.negativeData.length);
-        
-        int less = negativeData.length  < inputSet.negativeData.length ? negativeData.length : inputSet.negativeData.length;
-        for (int i=0;i<less;i++)
+        BitSet retSet = new BitSet();
+        retSet.negativeData = (negativeData.length >= inputSet.negativeData.length) ?
+                Arrays.copyOf(negativeData, negativeData.length): Arrays.copyOf(negativeData, negativeData.length);
+
+        for (int i=0;i<retSet.negativeData.length;i++)
                  retSet.negativeData[i] = negativeData[i] | inputSet.negativeData[i];
-            
-        if (positiveData.length >= inputSet.positiveData.length) 
-            retSet.positiveData = Arrays.copyOf(positiveData, positiveData.length);
-        else
-            retSet.positiveData = Arrays.copyOf(inputSet.positiveData, inputSet.positiveData.length);
-        
-        less = positiveData.length  < inputSet.positiveData.length ? positiveData.length : inputSet.positiveData.length;
-        for (int i=0;i<less;i++)
+
+        retSet.positiveData = (positiveData.length >= inputSet.positiveData.length) ?
+                Arrays.copyOf(positiveData, positiveData.length): Arrays.copyOf(positiveData, positiveData.length);
+
+        for (int i=0;i<inputSet.positiveData.length;i++)
                  retSet.positiveData[i] = positiveData[i] | inputSet.positiveData[i];
         return retSet;
     }
@@ -112,23 +105,17 @@ public class BitSet {
 
     public BitSet difference(BitSet inputSet){
         BitSet retSet = new BitSet();
-        if (negativeData.length >= inputSet.negativeData.length) 
-            retSet.negativeData = Arrays.copyOf(negativeData, negativeData.length);
-         else
-            retSet.negativeData = Arrays.copyOf(inputSet.negativeData, inputSet.negativeData.length);
-        
-        int less = negativeData.length  < inputSet.negativeData.length ? negativeData.length : inputSet.negativeData.length;
-        for (int i=0;i<less;i++)
+        retSet.negativeData = (negativeData.length >= inputSet.negativeData.length) ?
+                Arrays.copyOf(negativeData, negativeData.length): Arrays.copyOf(negativeData, negativeData.length);
+
+        for (int i=0;i<retSet.negativeData.length;i++)
                  retSet.negativeData[i] = negativeData[i] ^ inputSet.negativeData[i];
-            
-        if (positiveData.length >= inputSet.positiveData.length) 
-            retSet.positiveData = Arrays.copyOf(positiveData, positiveData.length);
-        else
-            retSet.positiveData = Arrays.copyOf(inputSet.positiveData, inputSet.positiveData.length);
-        
-        less = positiveData.length  < inputSet.positiveData.length ? positiveData.length : inputSet.positiveData.length;
-        for (int i=0;i<less;i++)
-                 retSet.positiveData[i] = positiveData[i] ^ inputSet.positiveData[i];
+
+        retSet.positiveData = (positiveData.length >= inputSet.positiveData.length) ?
+                Arrays.copyOf(positiveData, positiveData.length): Arrays.copyOf(positiveData, positiveData.length);
+
+        for (int i=0;i<inputSet.positiveData.length;i++)
+            retSet.positiveData[i] = positiveData[i] ^ inputSet.positiveData[i];
         return retSet;
     }
 
