@@ -25,7 +25,7 @@ public class StationeryAccountingService {
 
     public boolean contains (StationaryItemInterface item){
         if (item==null)
-            throw new NullPointerException("Adding item can't be a null reference");
+            throw new NullPointerException("Searching item can't be a null reference");
 
         return itemsList.contains(item);
     }
@@ -37,7 +37,7 @@ public class StationeryAccountingService {
      */
     public boolean remove (StationaryItemInterface item){
         if (item==null)
-            throw new NullPointerException("Adding item can't be a null reference");
+            throw new NullPointerException("Removing item can't be a null reference");
 
         return itemsList.remove(item);
     }

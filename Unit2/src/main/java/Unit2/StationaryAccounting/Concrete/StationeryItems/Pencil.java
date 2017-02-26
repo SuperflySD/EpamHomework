@@ -42,7 +42,7 @@ public class Pencil implements StationaryItemInterface {
 
     @Override
     public String toString() {
-        return String.format(Locale.ENGLISH, "Pen (color - %s, price - %.2f)", color, price);
+        return String.format(Locale.ENGLISH, "Pencil (color - %s, price - %.2f)", color, price);
     }
 
     @Override
