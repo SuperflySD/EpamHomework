@@ -1,4 +1,4 @@
-package Unit2;
+package Unit2.PenClass;
 
 import java.math.BigDecimal;
 import java.util.Locale;
@@ -15,7 +15,7 @@ public class Pen {
    */
 
   public Pen(String color, BigDecimal price) {
-    if (color==null || price==null || price.equals(0))
+    if (color==null || color.length()==0 || price==null || price.compareTo(new BigDecimal(0))==0)
       throw new IllegalArgumentException("One o more arguments reference to null or equal zero");
 
     this.color = color;
@@ -29,7 +29,7 @@ public class Pen {
       if (o == null || getClass() != o.getClass())
         return false;
 
-      return price.equals(((Pen)o).price) && color.equals(((Pen)o).color);
+      return price.compareTo(((Pen)o).price)==0 && color.equals(((Pen)o).color);
   }
 
   @Override
