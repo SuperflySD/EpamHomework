@@ -7,7 +7,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class StudentGroupTest {
-       StudentGroup group = new StudentGroup(StudySubject.Astronomy, StudySubject.TypeOfGrades.Decimal).
+       StudentGroup group = new StudentGroup(StudySubject.Astronomy).
             addStudent(Student.Alekseev, Student.Ivanov, Student.Alekseev, Student.Oblomov, Student.Vodkin);
 
     @Test

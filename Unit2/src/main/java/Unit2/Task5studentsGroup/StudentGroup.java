@@ -9,14 +9,12 @@ import java.util.List;
 
 
 public class StudentGroup {
-    private StudySubject.TypeOfGrades typo;
     private StudySubject subject;
     private HashMap<Student, List<Grade>> studentMap = new HashMap<>();
 
 
-    public StudentGroup(StudySubject subject, StudySubject.TypeOfGrades typo) {
+    public StudentGroup(StudySubject subject) {
         this.subject=subject;
-        this.typo = typo;
     }
 
     public StudentGroup addStudent  (Student ... students){
@@ -46,7 +44,7 @@ public class StudentGroup {
     public  void setGrade  (Student student, Grade grade){
         if (!studentMap.containsKey(student))
             throw new IllegalArgumentException("There is no such a student in the group");
-        if (typo == StudySubject.TypeOfGrades.Integer &&
+        if (subject.typeOfGrades == StudySubject.TypeOfGrades.Integer &&
            (grade.getValue() instanceof Double || grade.getValue() instanceof Float))
             throw new IllegalArgumentException("Value of the grade can't be decimal for this type of study subject");
 
@@ -73,7 +71,7 @@ public class StudentGroup {
     }
 
     public StudySubject.TypeOfGrades getTypeOfGrades() {
-        return typo;
+        return subject.typeOfGrades;
     }
 
     @Override
