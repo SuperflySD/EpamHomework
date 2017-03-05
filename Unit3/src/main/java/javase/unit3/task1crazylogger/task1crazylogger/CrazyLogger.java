@@ -1,9 +1,8 @@
-package javase.unit3;
+package javase.unit3.task1crazylogger.task1crazylogger;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.Optional;
 
 
 public class CrazyLogger {

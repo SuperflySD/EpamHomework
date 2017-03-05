@@ -1,5 +1,7 @@
-package javase.unit3;
+package javase.unit3.task1crazylogger;
 
+import javase.unit3.task1crazylogger.task1crazylogger.CrazyLogger;
+import javase.unit3.task1crazylogger.task1crazylogger.Level;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
