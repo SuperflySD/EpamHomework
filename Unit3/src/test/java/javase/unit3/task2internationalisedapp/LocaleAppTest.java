@@ -24,7 +24,6 @@ public class LocaleAppTest {
         assertEquals(app.getAnswer(3), "3. Because I want to have my task number two done;");
 
         assertEquals(app.getAnswer(2), "2. You should open File/Settings/Editor/File Encodings and set default encoding on UTF-8;");
-
     }
 
 }
