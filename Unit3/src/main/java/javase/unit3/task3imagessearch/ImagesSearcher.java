@@ -13,14 +13,18 @@ public class ImagesSearcher {
     public List<String> findAllSentencesWithImages(String fileName) {
         List<String> groupsList = new ArrayList<>();
         try (Scanner scanner = new Scanner(new File(fileName))) {
-            Pattern pattern = Pattern.compile("(\\.|>)\\s?.+(\\([Рр]ис. [1-9][0-9]?\\)|[рР]исун[а-я]{2,3}\\s[1-9][0-9]?).*\\.", Pattern.UNICODE_CHARACTER_CLASS);
+            Pattern patternGeneral = Pattern.compile("[А-Я].*?((?<!([Рр]ис)|\\d)[.!?])", Pattern.UNICODE_CHARACTER_CLASS);
+            Pattern patternSpecial = Pattern.compile(".+[Рр]ис.+");
             Matcher matcher;
-
             while (scanner.hasNextLine()) {
                 String str= scanner.nextLine();
-                matcher = pattern.matcher(str);
-                if (matcher.find())
-                    groupsList.add(str.substring(matcher.start()+1, matcher.end()));
+                matcher = patternGeneral.matcher(str);
+                if (matcher.find()){
+                    String stringGeneral = str.substring(matcher.start(), matcher.end());
+                    matcher = patternSpecial.matcher(stringGeneral);
+                    if (matcher.find())
+                        groupsList.add(stringGeneral.substring(matcher.start(), matcher.end()));
+                }
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -29,7 +33,7 @@ public class ImagesSearcher {
     }
 
     public boolean areImagesConsequent(List<String> groupsList) {
-        Pattern pattern = Pattern.compile("(\\d\\d?)");
+        Pattern pattern = Pattern.compile("((?<=[Рр]ис. )\\d\\d?)|((?<=[Рр]исун[а-я][а-я] )\\d\\d?)");
         Matcher matcher;
         List<Integer> intList = new ArrayList<>();
         for (int i=0;i<groupsList.size(); i++) {

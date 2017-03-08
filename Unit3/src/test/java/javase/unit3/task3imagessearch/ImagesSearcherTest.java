@@ -4,7 +4,9 @@ import org.junit.Test;
 
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class ImagesSearcherTest {
     ImagesSearcher searcher = new ImagesSearcher();
@@ -13,8 +15,7 @@ public class ImagesSearcherTest {
     public void findImagesTest() throws Exception {
        List<String> list = searcher.findAllSentencesWithImages("src\\main\\resources\\Article.html");
        for (String str: list)
-          System.out.println(str);
-       System.out.println(list.size());
+          assertTrue(str.contains("Рис")||str.contains("рис"));
 
 }
 
