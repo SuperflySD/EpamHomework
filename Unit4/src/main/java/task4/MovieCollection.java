@@ -28,9 +28,7 @@ public class MovieCollection implements Serializable {
         FileInputStream fileInputStream = new FileInputStream(fileName);
         ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
 
-            collection = (MovieCollection) objectInputStream.readObject();
-           // str = (String) objectInputStream.readObject();
-
+        collection = (MovieCollection) objectInputStream.readObject();
         objectInputStream.close();
         fileInputStream.close();
         return collection;
