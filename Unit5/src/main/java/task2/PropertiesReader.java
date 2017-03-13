@@ -28,7 +28,6 @@ public class PropertiesReader {
 
     private Map<String, String> parseFile(String filePath) throws IOException {
         try (BufferedReader bf = new BufferedReader(new FileReader(filePath))) {
-            Map<String, String> map = new HashMap<>();
             return bf.lines().map(x -> x.trim().split(":")).collect(Collectors.toMap(x -> x[0], x -> x[1]));
         }
     }
