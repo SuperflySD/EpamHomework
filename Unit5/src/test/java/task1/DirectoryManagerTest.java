@@ -10,10 +10,10 @@ public class DirectoryManagerTest {
     private final String FILENAME = "newFile";
 
         @Test
-    public void getDirectoryContent() throws Exception {
+    public void getDirectoryContent() throws DirectoryNotFoundException {
         assertTrue(manager.getDirectoryContent(DIRECTORYPATH).contains("1.txt"));
-
     }
+
     @Test
     public void createFile() throws Exception {
         if (manager.getDirectoryContent(DIRECTORYPATH).contains(FILENAME+".txt"))
