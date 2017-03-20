@@ -1,7 +1,7 @@
-package task2;
+package task;
 
 import org.junit.Test;
-import task1.JavaCodeBytesReader;
+import unit7task1.JavaCodeBytesReader;
 
 import java.util.Map;
 

@@ -1,4 +1,4 @@
-package task1;
+package unit7task1;
 
 public class WritingThread extends Thread {
     private int i;

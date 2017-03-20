@@ -1,7 +1,7 @@
-package task2;
+package unit7task2;
 
 import org.junit.Test;
-import java.io.FileNotFoundException;
+
 import static org.junit.Assert.assertEquals;
 
 public class PropertiesReaderTest {

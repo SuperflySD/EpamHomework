@@ -1,4 +1,4 @@
-package task2;
+package task;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;

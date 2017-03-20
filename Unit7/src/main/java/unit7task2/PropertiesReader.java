@@ -1,4 +1,4 @@
-package task2;
+package unit7task2;
 
 import java.io.*;
 import java.util.Map;

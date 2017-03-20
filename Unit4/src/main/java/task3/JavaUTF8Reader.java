@@ -1,4 +1,4 @@
-package task3;
+package unit7task3;
 
 import java.io.*;
 import java.util.HashMap;
