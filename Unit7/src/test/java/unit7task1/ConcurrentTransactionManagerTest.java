@@ -8,7 +8,9 @@ public class ConcurrentTransactionManagerTest {
 
     @Test
     public void getTransactionsParallelTest() throws Exception {
-        new ReadingThread(manager, FILEPATH).start();
+        ReadingThread readingThread = new ReadingThread(manager, FILEPATH);
+        readingThread.start();
+        readingThread.join();
 
     }
 
@@ -16,6 +18,7 @@ public class ConcurrentTransactionManagerTest {
     public void writeTransactionTest() throws Exception {
         for (int i = 0; i < 10; i++) {
             new WritingThread(manager,FILEPATH,i).start();
+            new WritingThreadLock(manager, FILEPATH,i).start();
         }
     }
 }

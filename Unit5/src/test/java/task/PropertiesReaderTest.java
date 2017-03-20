@@ -1,9 +1,11 @@
 package task;
 
 import org.junit.Test;
+import task2propertiesreader.DirectoryNotFoundException;
+import task2propertiesreader.KeyNotFoundException;
+import task2propertiesreader.PropertiesReader;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
 
 import static org.junit.Assert.*;
 

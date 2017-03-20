@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 public class ConcurrentTransactionManager {
 
-    public List<Transaction> getTransactionsParallel(String filePath) throws IOException {
+    public List<Transaction> getTransactions(String filePath) throws IOException {
         Map<String, Object> results = new HashMap<>();
         try (BufferedReader bf = new BufferedReader(new FileReader(filePath))) {
             return bf.lines().filter(x -> x.contains("Transaction")).

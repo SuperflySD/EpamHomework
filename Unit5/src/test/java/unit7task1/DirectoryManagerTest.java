@@ -1,6 +1,8 @@
 package unit7task1;
 
 import org.junit.Test;
+import task1directorymanager.DirectoryManager;
+import task1directorymanager.DirectoryNotFoundException;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

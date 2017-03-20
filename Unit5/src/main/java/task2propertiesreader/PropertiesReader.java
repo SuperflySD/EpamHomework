@@ -1,7 +1,6 @@
-package task;
+package task2propertiesreader;
 
 import java.io.*;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 

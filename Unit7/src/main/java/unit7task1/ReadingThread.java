@@ -5,7 +5,7 @@ import java.util.List;
 
 public class ReadingThread extends Thread {
     private ConcurrentTransactionManager manager;
-    private String FILEPATH;
+    private final String FILEPATH;
 
     public ReadingThread(ConcurrentTransactionManager manager, String FILEPATH) {
         this.manager = manager;
@@ -14,15 +14,13 @@ public class ReadingThread extends Thread {
 
     @Override
     public void run() {
-
-        List<Transaction> accList = null;
-        try {
-            accList = manager.getTransactionsParallel(FILEPATH);
-        } catch (IOException e) {
-            e.printStackTrace();
+        synchronized (manager) {
+            try {
+                List<Transaction> accList = manager.getTransactions(FILEPATH);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-        for (Transaction s : accList) {
-                System.out.println(s);
-
     }
-}}
+
+}
