@@ -5,11 +5,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class PropertiesReader {
+    private volatile int readersSameTime = 0;
     private Map<String, String> map;
 
     public PropertiesReader(String filePath) throws IOException {
-            this.directoryCheck(filePath);
-            map = this.parseFile(filePath);
+        this.directoryCheck(filePath);
+        map = this.parseFile(filePath);
     }
 
     public String getValue(String key) throws Exception {
@@ -35,6 +36,18 @@ public class PropertiesReader {
             throw new FileNotFoundException("File can't be found in the pointed place \"" + filePath + "\"");
         return true;
     }
+
+    public int getReadersSameTime() {
+        return readersSameTime;
+    }
+
+    public void plusReadersSameTime() {
+        this.readersSameTime++;
+    }
+    public void minusReadersSameTime() {
+        this.readersSameTime--;
+    }
+
 }
 
 class KeyNotFoundException extends Exception {

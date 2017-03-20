@@ -1,6 +1,7 @@
 package unit7task3;
 
 import org.junit.Test;
+import task3utf8reader.JavaUTF8Reader;
 
 public class JavaUTF8ReaderTest {
     JavaUTF8Reader jr = new JavaUTF8Reader();

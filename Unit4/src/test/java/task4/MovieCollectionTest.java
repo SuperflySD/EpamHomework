@@ -1,6 +1,8 @@
 package task4;
 
 import org.junit.Test;
+import task4moviecollection.Movie;
+import task4moviecollection.MovieCollection;
 
 import static org.junit.Assert.*;
 

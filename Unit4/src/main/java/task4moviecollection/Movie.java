@@ -1,4 +1,4 @@
-package task4;
+package task4moviecollection;
 
 import java.io.Serializable;
 import java.util.ArrayList;

@@ -1,10 +1,6 @@
-package unit7task3;
+package task3utf8reader;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class JavaUTF8Reader {
 

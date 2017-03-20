@@ -1,7 +1,6 @@
-package task;
+package task2charsreader;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
