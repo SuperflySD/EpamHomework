@@ -35,4 +35,20 @@ public class Account {
     public String toString() {
         return "Account{owner=" + owner + ", sum=" + sum + "}";
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Account)) return false;
+
+        Account account = (Account) o;
+        return owner.equals(account.owner);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = owner.hashCode();
+        result = 31 * result + sum.hashCode();
+        return result;
+    }
 }

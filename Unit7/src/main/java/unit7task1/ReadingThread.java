@@ -2,8 +2,9 @@ package unit7task1;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.Callable;
 
-public class ReadingThread extends Thread {
+public class ReadingThread implements Callable {
     private ConcurrentTransactionManager manager;
     private final String FILEPATH;
 
@@ -13,14 +14,15 @@ public class ReadingThread extends Thread {
     }
 
     @Override
-    public void run() {
+    public List<Transaction> call() throws Exception {
+        List<Transaction> accList = null;
         synchronized (manager) {
             try {
-                List<Transaction> accList = manager.getTransactions(FILEPATH);
+               accList = manager.getTransactions(FILEPATH);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+        return accList;
     }
-
 }

@@ -2,6 +2,8 @@ package unit7task3;
 
 import org.junit.Test;
 
+import static org.junit.Assert.assertFalse;
+
 public class WaitNotifyTest {
     @Test
     public void readSameTime() throws Exception {

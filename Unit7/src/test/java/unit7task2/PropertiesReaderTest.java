@@ -18,7 +18,7 @@ public class PropertiesReaderTest {
             new PropertyReadingThread(propertiesReader, "4").start();
             new PropertyReadingThread(propertiesReader, "4").start();
             new PropertyReadingThread(propertiesReader, "4").start();
-            assertTrue(propertiesReader.getReadersSameTime()<2);
+            assertTrue(propertiesReader.getReadersSameTime() < 2);
         }
     }
 
