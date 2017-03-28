@@ -109,10 +109,9 @@ public class TreeSetTest {
     public void remove() throws Exception {
         Random rnd = new Random();
         List<Integer> list = new ArrayList<>();
-        for (int i = 0; i < 100000; i++) {
-            int rn = rnd.nextInt(100);
+        for (int i = 0; i < 1000000; i++) {
+            int rn = rnd.nextInt(10000);
             treeSet.add(rn);
-            assertTrue(treeSet.contains(rn));
             if (rn % 7 == 0) {
                 treeSet.remove(rn);
                 assertFalse(treeSet.contains(rn));
@@ -120,15 +119,15 @@ public class TreeSetTest {
             else list.add(rn);
         }
         assertTrue(treeSet.containsAll(list));
-        assertFalse(treeSet.contains(7));
+        assertFalse(treeSet.contains(14));
     }
 
     @Test
-    public void remove1() throws Exception {
-       treeSet.addAll(Arrays.asList(new Integer[]{10, 4, 3, 6, 5, 7}));
-       treeSet.remove(6);
-       assertTrue(treeSet.containsAll(Arrays.asList(new Integer[]{10, 4, 3, 5, 7})));
-       assertFalse(treeSet.contains(6));
+    public void removeFromSpeciallyConstructedTree() throws Exception {
+       treeSet.addAll(Arrays.asList(new Integer[]{10, 3, 2, 8, 7, 5, 6 }));
+       treeSet.remove(8);
+       assertFalse(treeSet.contains(8));
+       assertTrue(treeSet.containsAll(Arrays.asList(new Integer[]{10, 3, 2, 7, 5, 6 })));
 
     }
 
@@ -187,7 +186,7 @@ public class TreeSetTest {
     public void equals() throws Exception {
         TreeSet treeSet1 = new TreeSet();
         treeSet.add(1);
-        treeSet1.add(2);
+        treeSet1.add(1);
 
         /*;
         Random rnd = new Random();

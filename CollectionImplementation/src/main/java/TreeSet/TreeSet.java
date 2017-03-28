@@ -103,66 +103,67 @@ public class TreeSet<V extends Comparable> implements Set<V> {
     public boolean remove(Object o) {
         if (root == null)
             return false;
-        if (root.value.equals(o)) {
-            root = removeOrReplace(root);
-            this.size--;
-            return true;
-        }
         return remove((V) o, root, root);
     }
 
     private boolean remove(V value, Node curNode, Node prevNode) {
+        if (curNode == null)
+            return false;
+
         if (value.compareTo(curNode.value) == 0) {
-            if (curNode.left == null && curNode.right == null)
+            if (curNode.left == null && curNode.right == null) {
                 if (curNode == prevNode.left)
                     prevNode.left = null;
-                else
+                if (curNode == prevNode.right)
                     prevNode.right = null;
-    }
-        
-        if(value.compareTo(curNode.value) < 0) {
-        if (curNode.left == null)
-            return false;
-        if (curNode.left.value.equals(value)) {
-            if (curNode.left.left == null && curNode.left.right == null)
-                curNode.left = null;
-            else {
-                Node temp = curNode.left;
-                curNode.left = removeOrReplace(curNode.left);
-                curNode.left.left = temp.left;
-                curNode.left.right = temp.right;
-                this.size--;
+                if (curNode == prevNode)
+                    root = null;
+                size--;
                 return true;
-            } else
-            return remove(value, curNode.left);
-        }
-        if (value.compareTo(curNode.value) > 0) {
-            if (curNode.right == null)
-                return false;
-            if (curNode.right.value.equals(value)) {
-                Node temp = curNode.right;
-                curNode.right = removeOrReplace(curNode.right);
-                curNode.right.left = temp.left;
-                curNode.right.right = temp.right;
-                this.size--;
+            }
+            else if (curNode.right == null) {
+                if (curNode == prevNode.left)
+                    prevNode.left = curNode.left;
+                if (curNode == prevNode.right)
+                    prevNode.right = curNode.left;
+                if (curNode == prevNode)
+                    root = curNode.left;
+                size--;
                 return true;
-            } else
-                return remove(value, curNode.right);
+            }
+            else if (curNode.right != null) {
+                if (curNode == prevNode.left) {
+                    prevNode.left = findToReplaceInRightChild(curNode.right, curNode.right);
+                    prevNode.left.left = curNode.left;
+                    prevNode.left.right = curNode.right;
+                }
+                if (curNode == prevNode.right) {
+                    prevNode.right = findToReplaceInRightChild(curNode.right, curNode.right);
+                    prevNode.right.left = curNode.left;
+                    prevNode.right.right = curNode.right;
+                }
+                if (curNode == prevNode) {
+                    root = findToReplaceInRightChild(curNode.right, curNode.right);
+                    root.left = curNode.left;
+                    root.right = curNode.right;
+                }
+                size--;
+                return true;
+            }
         }
-        return false;
-    }
 
-    private Node removeOrReplace(Node delNode) {
-        if (delNode.right == null)
-            return delNode.left;
+        if (value.compareTo(curNode.value) < 0)
+            return remove(value, curNode.left, curNode);
         else
-            return findToReplaceInRightSibling(delNode.right);
+            return remove(value, curNode.right, curNode);
     }
 
-    private Node findToReplaceInRightSibling(Node curNode) {
-        if (curNode.left == null)
+    private Node findToReplaceInRightChild(Node curNode, Node prevNode) {
+        if (curNode.left == null) {
+            prevNode.left = curNode.right;
             return curNode;
-        return findToReplaceInRightSibling(curNode.left);
+        }
+        return findToReplaceInRightChild(curNode.left, curNode);
     }
 
     @Override
