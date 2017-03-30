@@ -51,26 +51,29 @@ public class TreeSetTest {
     @Test
     public void iterator() throws Exception {
         Random rnd = new Random();
-        Set<Integer> standardSet = new java.util.HashSet<>();
+        java.util.TreeSet<Integer> standardSet = new java.util.TreeSet<>();
         standardSet.add(5000);
-        for (int i = 0; i < 5; i++) {
-            int rn = rnd.nextInt(10000);
+        for (int i = 0; i < 10000; i++) {
+            int rn = rnd.nextInt(100000);
             standardSet.add(rn);
         }
-        ArrayList<Integer> list = new ArrayList<>(standardSet);
-       // treeSet.addAll(list);
-        list.sort(Comparator.naturalOrder());
-
-        treeSet.addAll(Arrays.asList(new Integer[]{10, 3, 2, 8, 7, 5, 6,15,13,14,12}));
+        treeSet.addAll(standardSet);
         Iterator<Integer> itr = treeSet.iterator();
+        Iterator<Integer> standardSetIterator = standardSet.iterator();
         int sum = 0;
         int value;
-        for ( int i=0;itr.hasNext(); i++) {
-            System.out.println(itr.next());
-           // sum+=value;
-            //assertEquals(value, (int) list.get(i));
+        for (; itr.hasNext();) {
+            value = itr.next();
+            sum += value;
+            assertEquals(value, (int) standardSetIterator.next());
         }
-      //  assertEquals(sum, list.stream().mapToInt(x->x).sum());
+        assertEquals(sum, standardSet.stream().mapToInt(x -> x).sum());
+    }
+
+    @Test
+    public void iteratorOnVoidCollection() throws Exception {
+        Iterator<Integer> itr = treeSet.iterator();
+        assertFalse(itr.hasNext());
 
     }
 

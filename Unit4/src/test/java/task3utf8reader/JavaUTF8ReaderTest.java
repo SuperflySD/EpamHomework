@@ -1,4 +1,4 @@
-package unit7task3;
+package task3utf8reader;
 
 import org.junit.Test;
 import task3utf8reader.JavaUTF8Reader;

@@ -274,14 +274,24 @@ public class TreeSet<V extends Comparable> implements Set<V> {
 
     private class Itr<V> implements Iterator<V> {
         private Deque<Node<V>> deque = new LinkedList<>();
-        private Deque<V> deque1 = new LinkedList<>();
-
-        Itr() {
+        {
             deque.add(root);
-           /* while (deque.peekFirst().left != null)
-                deque.addFirst(deque.peekFirst().left);*/
+        }
+
+        @Override
+        public boolean hasNext() {
+            return !deque.isEmpty() && !(deque.peekFirst() == null && deque.size() == 1);
+        }
+
+        @Override
+        public V next() {
+            return lazyNext();
+        }
+
+        private V lazyNext() {
+            Node<V> firstEl = null;
             while (!deque.isEmpty()) {
-                Node<V> firstEl = deque.peekFirst();
+                firstEl = deque.peekFirst();
                 if (firstEl == null)
                     deque.pollFirst();
 
@@ -293,30 +303,12 @@ public class TreeSet<V extends Comparable> implements Set<V> {
                 if (firstEl == null)
                     break;
 
-                deque1.addLast(firstEl.value);
-
                 deque.addFirst(firstEl.right);
+                break;
             }
+            return firstEl.value;
         }
 
-        private V lazyNext() {
-
-
-        }
-
-        @Override
-        public boolean hasNext() {
-            return !deque.isEmpty();
-        }
-
-        @Override
-        public V next() {
-            Node<V> firstEl = deque.pollFirst();
-            /*if (firstEl.right!=null)
-                deque.addFirst(firstEl.right);
-*/
-            return deque1.pollFirst();
-        }
     }
 
 }
