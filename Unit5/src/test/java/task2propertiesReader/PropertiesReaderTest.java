@@ -1,4 +1,4 @@
-package task;
+package task2propertiesReader;
 
 import org.junit.Test;
 import task2propertiesreader.DirectoryNotFoundException;

@@ -38,7 +38,8 @@ public class TreeSet<V extends Comparable> implements Set<V> {
 
     @Override
     public Iterator<V> iterator() {
-        return null;
+
+        return new Itr();
     }
 
     @Override
@@ -116,34 +117,50 @@ public class TreeSet<V extends Comparable> implements Set<V> {
                     prevNode.left = null;
                 if (curNode == prevNode.right)
                     prevNode.right = null;
-                if (curNode == prevNode)
+                if (curNode == root)
                     root = null;
                 size--;
                 return true;
-            }
-            else if (curNode.right == null) {
+            } else if (curNode.right == null) {
                 if (curNode == prevNode.left)
                     prevNode.left = curNode.left;
                 if (curNode == prevNode.right)
                     prevNode.right = curNode.left;
-                if (curNode == prevNode)
+                if (curNode == root)
                     root = curNode.left;
                 size--;
                 return true;
-            }
-            else if (curNode.right != null) {
+            } else if (curNode.right != null) {
                 if (curNode == prevNode.left) {
-                    prevNode.left = findToReplaceInRightChild(curNode.right, curNode.right);
+                    if (curNode.right.left == null) {
+                        prevNode.left = curNode.right;
+                        prevNode.left.left = curNode.left;
+                        size--;
+                        return true;
+                    }
+                    prevNode.left = findReplacementInRightChild(curNode.right, curNode.right);
                     prevNode.left.left = curNode.left;
                     prevNode.left.right = curNode.right;
                 }
                 if (curNode == prevNode.right) {
-                    prevNode.right = findToReplaceInRightChild(curNode.right, curNode.right);
+                    if (curNode.right.left == null) {
+                        prevNode.right = curNode.right;
+                        prevNode.right.left = curNode.left;
+                        size--;
+                        return true;
+                    }
+                    prevNode.right = findReplacementInRightChild(curNode.right, curNode.right);
                     prevNode.right.left = curNode.left;
                     prevNode.right.right = curNode.right;
                 }
-                if (curNode == prevNode) {
-                    root = findToReplaceInRightChild(curNode.right, curNode.right);
+                if (curNode == root) {
+                    if (root.right.left == null) {
+                        root = root.right;
+                        root.left = curNode.left;
+                        size--;
+                        return true;
+                    }
+                    root = findReplacementInRightChild(curNode.right, curNode.right);
                     root.left = curNode.left;
                     root.right = curNode.right;
                 }
@@ -151,19 +168,18 @@ public class TreeSet<V extends Comparable> implements Set<V> {
                 return true;
             }
         }
-
         if (value.compareTo(curNode.value) < 0)
             return remove(value, curNode.left, curNode);
         else
             return remove(value, curNode.right, curNode);
     }
 
-    private Node findToReplaceInRightChild(Node curNode, Node prevNode) {
+    private Node findReplacementInRightChild(Node curNode, Node prevNode) {
         if (curNode.left == null) {
             prevNode.left = curNode.right;
             return curNode;
         }
-        return findToReplaceInRightChild(curNode.left, curNode);
+        return findReplacementInRightChild(curNode.left, curNode);
     }
 
     @Override
@@ -227,7 +243,7 @@ public class TreeSet<V extends Comparable> implements Set<V> {
         if (!(o instanceof TreeSet))
             return false;
         TreeSet<V> set = (TreeSet<V>) o;
-        if (this.size != ((TreeSet) o).size())
+        if (this.size != set.size())
             return false;
 
         return containsAll(set) && set.containsAll(this);
@@ -241,10 +257,10 @@ public class TreeSet<V extends Comparable> implements Set<V> {
     }
 
 
-    public static class Node<V extends Comparable<V>> {
+    private class Node<V> {
         private final V value;
-        private Node left;
-        private Node right;
+        private Node<V> left;
+        private Node<V> right;
 
         Node(V value) {
             this.value = value;
@@ -252,9 +268,54 @@ public class TreeSet<V extends Comparable> implements Set<V> {
 
         @Override
         public String toString() {
-            return "Node{" +
-                    "value=" + value +
-                    '}';
+            return "Node{value=" + value + '}';
+        }
+    }
+
+    private class Itr<V> implements Iterator<V> {
+        private Deque<Node<V>> deque = new LinkedList<>();
+        private Deque<V> deque1 = new LinkedList<>();
+
+        Itr() {
+            deque.add(root);
+           /* while (deque.peekFirst().left != null)
+                deque.addFirst(deque.peekFirst().left);*/
+            while (!deque.isEmpty()) {
+                Node<V> firstEl = deque.peekFirst();
+                if (firstEl == null)
+                    deque.pollFirst();
+
+                if (firstEl != null) {
+                    deque.addFirst(firstEl.left);
+                    continue;
+                }
+                firstEl = deque.pollFirst();
+                if (firstEl == null)
+                    break;
+
+                deque1.addLast(firstEl.value);
+
+                deque.addFirst(firstEl.right);
+            }
+        }
+
+        private V lazyNext() {
+
+
+        }
+
+        @Override
+        public boolean hasNext() {
+            return !deque.isEmpty();
+        }
+
+        @Override
+        public V next() {
+            Node<V> firstEl = deque.pollFirst();
+            /*if (firstEl.right!=null)
+                deque.addFirst(firstEl.right);
+*/
+            return deque1.pollFirst();
         }
     }
 

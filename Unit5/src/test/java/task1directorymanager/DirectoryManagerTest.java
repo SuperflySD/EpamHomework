@@ -1,4 +1,4 @@
-package unit7task1;
+package task1directorymanager;
 
 import org.junit.Test;
 import task1directorymanager.DirectoryManager;

@@ -3,6 +3,7 @@ package TreeSet;
 import org.junit.Test;
 
 import java.util.*;
+import java.util.stream.IntStream;
 
 import static org.junit.Assert.*;
 
@@ -49,6 +50,27 @@ public class TreeSetTest {
 
     @Test
     public void iterator() throws Exception {
+        Random rnd = new Random();
+        Set<Integer> standardSet = new java.util.HashSet<>();
+        standardSet.add(5000);
+        for (int i = 0; i < 5; i++) {
+            int rn = rnd.nextInt(10000);
+            standardSet.add(rn);
+        }
+        ArrayList<Integer> list = new ArrayList<>(standardSet);
+       // treeSet.addAll(list);
+        list.sort(Comparator.naturalOrder());
+
+        treeSet.addAll(Arrays.asList(new Integer[]{10, 3, 2, 8, 7, 5, 6,15,13,14,12}));
+        Iterator<Integer> itr = treeSet.iterator();
+        int sum = 0;
+        int value;
+        for ( int i=0;itr.hasNext(); i++) {
+            System.out.println(itr.next());
+           // sum+=value;
+            //assertEquals(value, (int) list.get(i));
+        }
+      //  assertEquals(sum, list.stream().mapToInt(x->x).sum());
 
     }
 
@@ -108,26 +130,26 @@ public class TreeSetTest {
     @Test
     public void remove() throws Exception {
         Random rnd = new Random();
-        List<Integer> list = new ArrayList<>();
-        for (int i = 0; i < 1000000; i++) {
+        Set<Integer> standardSet = new java.util.HashSet<>();
+        standardSet.add(5000);
+        for (int i = 0; i < 10000; i++) {
             int rn = rnd.nextInt(10000);
-            treeSet.add(rn);
-            if (rn % 7 == 0) {
-                treeSet.remove(rn);
-                assertFalse(treeSet.contains(rn));
-            }
-            else list.add(rn);
+            standardSet.add(rn);
         }
-        assertTrue(treeSet.containsAll(list));
-        assertFalse(treeSet.contains(14));
+        ArrayList<Integer> list = new ArrayList<>(standardSet);
+        treeSet.addAll(list);
+        treeSet.removeAll(list.subList(0, 1000));
+        assertTrue(treeSet.containsAll(list.subList(1000, list.size() - 1)));
+        for (int i = 0; i < 1000; i++)
+            assertFalse(treeSet.contains(list.get(i)));
     }
 
     @Test
     public void removeFromSpeciallyConstructedTree() throws Exception {
-       treeSet.addAll(Arrays.asList(new Integer[]{10, 3, 2, 8, 7, 5, 6 }));
-       treeSet.remove(8);
-       assertFalse(treeSet.contains(8));
-       assertTrue(treeSet.containsAll(Arrays.asList(new Integer[]{10, 3, 2, 7, 5, 6 })));
+        treeSet.addAll(Arrays.asList(new Integer[]{10, 3, 2, 8, 7, 5, 6}));
+        treeSet.remove(8);
+        assertFalse(treeSet.contains(8));
+        assertTrue(treeSet.containsAll(Arrays.asList(new Integer[]{10, 3, 2, 7, 5, 6})));
 
     }
 
@@ -139,7 +161,7 @@ public class TreeSetTest {
             Integer rn = rnd.nextInt(1000);
             rndList.add(rn);
             treeSet.add(rn);
-             assertTrue(treeSet.containsAll(rndList));
+            assertTrue(treeSet.containsAll(rndList));
         }
         rndList.add(0, -7);
         assertFalse(treeSet.containsAll(rndList));
@@ -147,9 +169,14 @@ public class TreeSetTest {
 
     @Test
     public void addAll() throws Exception {
-        treeSet.addAll(Arrays.asList(new Integer[]{1, 2, 3, 4, 5}));
-        assertTrue(treeSet.addAll(Arrays.asList(new Integer[]{6, 7})));
-        assertFalse(treeSet.addAll(Arrays.asList(new Integer[]{6, 1})));
+        Random rnd = new Random();
+        Set<Integer> standardSet = new java.util.HashSet<>();
+        for (int i = 0; i < 10000; i++) {
+            int rn = rnd.nextInt(10000);
+            standardSet.add(rn);
+        }
+        treeSet.addAll(standardSet);
+        assertTrue(treeSet.containsAll(standardSet));
     }
 
     @Test
@@ -194,6 +221,6 @@ public class TreeSetTest {
             Integer rn = rnd.nextInt(70);
             treeSet.add(rn);
             treeSet1.add(rn);*/
-            assertEquals(treeSet, treeSet1);
-        }
+        assertEquals(treeSet, treeSet1);
     }
+}
