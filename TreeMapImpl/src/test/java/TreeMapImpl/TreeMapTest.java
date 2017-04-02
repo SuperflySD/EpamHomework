@@ -217,22 +217,19 @@ public class TreeMapTest {
     @Test
     public void entrySet() throws Exception {
         Random rnd = new Random();
-        for (int i = 5; i < 100; i++)
-            treeMap.put(i, "" + i);
-        TreeMap.EntrySet entrySet = treeMap.entrySet();
+        Map<Integer, String> standardMap = new HashMap<>();
+        for (int i = 0; i < 10000; i++) {
+            int t = rnd.nextInt(20000);
+            standardMap.put(t, "" + i);
+            treeMap.put(t, "" + i);
+        }
+        for (Map.Entry entry : treeMap.entrySet())
+            assertTrue(standardMap.containsKey(entry.getKey()));
+        for (Map.Entry entry : standardMap.entrySet())
+            assertTrue(treeMap.containsKey(entry.getKey()));
 
-        Iterator<TreeMap.Entry> itr = entrySet.iterator();
-
-        Map.Entry entr2= itr.next();
-
-        System.out.println(itr.next().getValue());
-
-        /*for (Map.Entry entry:entrySet) {
-            Map.Entry entr1= entry;
-            System.out.println(entr1.getValue());
-
-        }*/
 
     }
 
 }
+

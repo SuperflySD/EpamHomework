@@ -235,7 +235,7 @@ public class TreeMap<K extends Comparable, V> implements Map<K, V> {
     }*/
 
     @Override
-    public EntrySet entrySet() {
+    public Set<Map.Entry<K, V>> entrySet() {
         return new EntrySet();
     }
 
@@ -264,7 +264,7 @@ public class TreeMap<K extends Comparable, V> implements Map<K, V> {
         @Override
         public V setValue(V value) {
             V temp = this.value;
-            this.value=value;
+            this.value = value;
             return temp;
         }
 
@@ -281,6 +281,7 @@ public class TreeMap<K extends Comparable, V> implements Map<K, V> {
 
             return this.value.equals(entry.value);
         }
+
         @Override
         public int hashCode() {
             int result = key.hashCode();
@@ -291,61 +292,117 @@ public class TreeMap<K extends Comparable, V> implements Map<K, V> {
         }
     }
 
-    public class EntrySet extends AbstractSet<Map.Entry<K, V>> {
-        HashSet<Entry<K, V>> entrySet = new HashSet<>();
-
-        public EntrySet() {
-            Iterator<Entry<K, V>> itr = iterator();
-            while (itr.hasNext())
-                entrySet.add(itr.next());
-        }
+    private class EntrySet implements Set<Map.Entry<K, V>> {
 
         @Override
-        public Iterator iterator() {
+        public Iterator<Map.Entry<K, V>> iterator() {
             return new LazyIterator();
         }
 
         @Override
-        public int size() {
-            return entrySet.size();
+        public Object[] toArray() {
+            throw new UnsupportedOperationException();
         }
 
+        @Override
+        public <T> T[] toArray(T[] a) {
+            throw new UnsupportedOperationException();
+        }
 
-        private class LazyIterator implements Iterator<Entry<K, V>> {
-            private Deque<Entry<K, V>> deque = new LinkedList<>();
+        @Override
+        public boolean add(Map.Entry<K, V> kvEntry) {
+            throw new UnsupportedOperationException();
+        }
 
-            {
-                deque.add(root);
-            }
+        @Override
+        public int size() {
+            return TreeMap.this.size;
+        }
 
-            @Override
-            public boolean hasNext() {
-                return !deque.isEmpty() && !(deque.peekFirst() == null && deque.size() == 1);
-            }
+        @Override
+        public boolean isEmpty() {
+            return TreeMap.this.size == 0;
+        }
 
-            @Override
-            public Entry<K, V> next() {
-                return lazyNext();
-            }
+        @Override
+        public boolean contains(Object o) {
+            throw new UnsupportedOperationException();
+        }
 
-            private Entry<K, V> lazyNext() {
-                Entry<K, V> retEntry = null;
-                while (!deque.isEmpty()) {
-                    if (deque.peekFirst() != null && deque.peekFirst().left != null) {
-                        deque.addFirst(deque.peekFirst().left);
-                        continue;
-                    }
-                    retEntry = deque.peekFirst();
-                    deque.addFirst(deque.pollFirst().right);
-                    break;
-                }
-                return retEntry;
-            }
+        @Override
+        public boolean remove(Object o) {
+
+            return false;
+        }
+
+        @Override
+        public boolean containsAll(Collection<?> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean addAll(Collection<? extends Map.Entry<K, V>> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean retainAll(Collection<?> c) {
+            return false;
+        }
+
+        @Override
+        public boolean removeAll(Collection<?> c) {
+            return false;
+        }
+
+        @Override
+        public void clear() {
+
         }
     }
 
+    public class LazyIterator implements Iterator<Map.Entry<K, V>> {
+        private Deque<Entry<K, V>> deque = new LinkedList<>();
+
+        {
+            deque.add(root);//TODO root=null
+        }
+
+        @Override
+        public boolean hasNext() {
+            return !deque.isEmpty() && !(deque.peekFirst() == null && deque.size() == 1);
+        }
+
+        @Override
+        public Map.Entry<K, V> next() {
+            Entry<K, V> curEntry = null;
+            while (!deque.isEmpty()) {
+                if (deque.peekFirst() != null && deque.peekFirst().left != null) {
+                    deque.addFirst(deque.peekFirst().left);
+                    continue;
+                }
+                if (deque.peekFirst() == null) {
+                    deque.pollFirst();
+                    curEntry = deque.pollFirst();
+                    deque.addFirst(curEntry.right);
+                    break;
+                }
+                curEntry = deque.pollFirst();
+                deque.addFirst(curEntry.right);
+                break;
+            }
+            return curEntry;
+        }
 
 
+        @Override
+        public void remove() {
+            // TreeMap.this.remove(curEntry.key);
 
+        }
+    }
 
 }
+
+
+
