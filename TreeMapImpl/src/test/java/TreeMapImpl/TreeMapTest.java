@@ -181,16 +181,15 @@ public class TreeMapTest {
     @Test
     public void equals() throws Exception {
         TreeMap<Integer, String> treeMap1 = new TreeMap<>();
-        treeMap.put(1, "");
-        treeMap1.put(1, "");
-        assertEquals(treeMap, treeMap1);
-        /*Random rnd = new Random();
+        Random rnd = new Random();
         for (int i = 0; i < 10000; i++) {
             Integer rn = rnd.nextInt(70);
-            treeMap.put(rn);
-            treeMap1.put(rn);*//**//*
-        assertEquals(treeMap, treeMap1);
-    }*/
+            treeMap.put(rn, "" + rn);
+            treeMap1.put(rn, "" + rn);
+            assertEquals(treeMap, treeMap1);
+        }
+        treeMap.put(1, "s");
+        assertNotEquals(treeMap, treeMap1);
     }
 
     @Test
@@ -227,9 +226,25 @@ public class TreeMapTest {
             assertTrue(standardMap.containsKey(entry.getKey()));
         for (Map.Entry entry : standardMap.entrySet())
             assertTrue(treeMap.containsKey(entry.getKey()));
-
-
     }
+
+    @Test
+    public void removeWithIterator() throws Exception {
+        List<Integer> list = new ArrayList<>();
+        for (int i = 0; i < 10000; i++) {
+            if (i % 7 != 0)
+                list.add(i);
+        }
+        Random rnd = new Random();
+        while (list.size() != 0) {
+            Integer rn = rnd.nextInt(10000);
+            if (list.contains(rn)) {
+                list.remove((Object) rn);
+                treeMap.put(rn, "v" + rn);
+            }
+        }
+    }
+
 
 }
 

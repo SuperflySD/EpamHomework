@@ -197,11 +197,10 @@ public class TreeMap<K extends Comparable, V> implements Map<K, V> {
             return true;
         if (!(o instanceof TreeMap))
             return false;
-
-        TreeMap<K, V> treeMap = (TreeMap<K, V>) o;
-        if (size != treeMap.size)
+        Map<K, V> inputMap = (Map<K, V>) o;
+        if(this.size != inputMap.size())
             return false;
-        return this.entrySet().equals(treeMap.entrySet());
+        return this.entrySet().equals(inputMap.entrySet());
     }
 
     @Override
@@ -275,11 +274,12 @@ public class TreeMap<K extends Comparable, V> implements Map<K, V> {
             if (!(o instanceof Entry))
                 return false;
 
-            Entry<K, V> entry = (Entry<K, V>) o;
-            if (!key.equals(entry.key))
+            Entry<K, V> inputEntry = (Entry<K, V>) o;
+            if (inputEntry.getValue() == null ? this.getValue() == null : inputEntry.getValue().equals(this.getValue()) &&
+                    (inputEntry.getKey().equals(this.getKey())))
+                return true;
+            else
                 return false;
-
-            return this.value.equals(entry.value);
         }
 
         @Override
@@ -357,15 +357,31 @@ public class TreeMap<K extends Comparable, V> implements Map<K, V> {
 
         @Override
         public void clear() {
+        }
 
+        @Override
+        public boolean equals(Object obj) {
+            EntrySet inputSet = (EntrySet) obj;
+            boolean result = true;
+
+            Iterator<Map.Entry<K, V>> thisIterator = this.iterator();
+            Iterator<Map.Entry<K, V>> inputIterator = inputSet.iterator();
+            while (thisIterator.hasNext()) {
+                Map.Entry<K, V> entry1 = thisIterator.next();
+                Map.Entry<K, V> entry2 = inputIterator.next();
+                if (!(entry1.equals(entry2)))
+                    return false;
+            }
+            return result;
         }
     }
 
     public class LazyIterator implements Iterator<Map.Entry<K, V>> {
         private Deque<Entry<K, V>> deque = new LinkedList<>();
+        Entry<K, V> curEntry = null;
 
         {
-            deque.add(root);//TODO root=null
+            deque.add(root);
         }
 
         @Override
@@ -375,7 +391,6 @@ public class TreeMap<K extends Comparable, V> implements Map<K, V> {
 
         @Override
         public Map.Entry<K, V> next() {
-            Entry<K, V> curEntry = null;
             while (!deque.isEmpty()) {
                 if (deque.peekFirst() != null && deque.peekFirst().left != null) {
                     deque.addFirst(deque.peekFirst().left);
@@ -383,21 +398,20 @@ public class TreeMap<K extends Comparable, V> implements Map<K, V> {
                 }
                 if (deque.peekFirst() == null) {
                     deque.pollFirst();
-                    curEntry = deque.pollFirst();
+                    this.curEntry = deque.pollFirst();
                     deque.addFirst(curEntry.right);
                     break;
                 }
-                curEntry = deque.pollFirst();
+                this.curEntry = deque.pollFirst();
                 deque.addFirst(curEntry.right);
                 break;
             }
             return curEntry;
         }
 
-
         @Override
         public void remove() {
-            // TreeMap.this.remove(curEntry.key);
+            TreeMap.this.remove(curEntry.key);
 
         }
     }
