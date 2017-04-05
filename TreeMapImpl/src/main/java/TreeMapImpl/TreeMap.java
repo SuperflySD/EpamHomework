@@ -4,8 +4,9 @@ package TreeMapImpl;
 import java.util.*;
 
 public class TreeMap<K extends Comparable, V> implements Map<K, V> {
-    private Entry root;
+    private Entry<K, V> root;
     private int size;
+    private Entry<K, V> toolForIterator;
 
     @Override
     public int size() {
@@ -144,6 +145,7 @@ public class TreeMap<K extends Comparable, V> implements Map<K, V> {
                     prevEntry.left = findReplacementInTheRightChild(curEntry.right, curEntry.right);
                     prevEntry.left.left = curEntry.left;
                     prevEntry.left.right = curEntry.right;
+                    this.toolForIterator = prevEntry.left;
                 }
                 if (curEntry == prevEntry.right) {
                     if (curEntry.right.left == null) {
@@ -155,6 +157,7 @@ public class TreeMap<K extends Comparable, V> implements Map<K, V> {
                     prevEntry.right = findReplacementInTheRightChild(curEntry.right, curEntry.right);
                     prevEntry.right.left = curEntry.left;
                     prevEntry.right.right = curEntry.right;
+                    this.toolForIterator = prevEntry.right;
                 }
                 if (curEntry == root) {
                     if (root.right.left == null) {
@@ -195,10 +198,10 @@ public class TreeMap<K extends Comparable, V> implements Map<K, V> {
     public boolean equals(Object o) {
         if (this == o)
             return true;
-        if (!(o instanceof TreeMap))
+        if (!(o instanceof Map))
             return false;
         Map<K, V> inputMap = (Map<K, V>) o;
-        if(this.size != inputMap.size())
+        if (this.size != inputMap.size())
             return false;
         return this.entrySet().equals(inputMap.entrySet());
     }
@@ -271,10 +274,10 @@ public class TreeMap<K extends Comparable, V> implements Map<K, V> {
         public boolean equals(Object o) {
             if (this == o)
                 return true;
-            if (!(o instanceof Entry))
+            if (!(o instanceof Map.Entry))
                 return false;
 
-            Entry<K, V> inputEntry = (Entry<K, V>) o;
+            Map.Entry<K, V> inputEntry = (Map.Entry<K, V>) o;
             if (inputEntry.getValue() == null ? this.getValue() == null : inputEntry.getValue().equals(this.getValue()) &&
                     (inputEntry.getKey().equals(this.getKey())))
                 return true;
@@ -290,6 +293,11 @@ public class TreeMap<K extends Comparable, V> implements Map<K, V> {
             result = 31 * result + (right != null ? right.hashCode() : 0);
             return result;
         }
+
+        @Override
+        public String toString() {
+            return "Entry{key=" + key + ", value=" + value + '}';
+        }
     }
 
     private class EntrySet implements Set<Map.Entry<K, V>> {
@@ -301,7 +309,19 @@ public class TreeMap<K extends Comparable, V> implements Map<K, V> {
 
         @Override
         public Object[] toArray() {
-            throw new UnsupportedOperationException();
+            Object[] arr = new Object[TreeMap.this.size];
+            TreeMap.this.size = 0;
+            toArr(root, arr);
+            TreeMap.this.size = arr.length;
+            return arr;
+        }
+
+        private void toArr(Entry entry, Object[] arr) {
+            if (entry == null)
+                return;
+            toArr(entry.left, arr);
+            arr[size++] = entry;
+            toArr(entry.right, arr);
         }
 
         @Override
@@ -361,7 +381,7 @@ public class TreeMap<K extends Comparable, V> implements Map<K, V> {
 
         @Override
         public boolean equals(Object obj) {
-            EntrySet inputSet = (EntrySet) obj;
+            Set inputSet = (Set) obj;
             boolean result = true;
 
             Iterator<Map.Entry<K, V>> thisIterator = this.iterator();
@@ -376,8 +396,9 @@ public class TreeMap<K extends Comparable, V> implements Map<K, V> {
         }
     }
 
-    public class LazyIterator implements Iterator<Map.Entry<K, V>> {
+    private class LazyIterator implements Iterator<Map.Entry<K, V>> {
         private Deque<Entry<K, V>> deque = new LinkedList<>();
+
         Entry<K, V> curEntry = null;
 
         {
@@ -412,11 +433,17 @@ public class TreeMap<K extends Comparable, V> implements Map<K, V> {
         @Override
         public void remove() {
             TreeMap.this.remove(curEntry.key);
+            if (TreeMap.this.toolForIterator != null) {
+                deque.addFirst(TreeMap.this.toolForIterator);
+                deque.addFirst(null);
+                TreeMap.this.toolForIterator=null;
+            }
 
         }
     }
 
 }
+
 
 
 

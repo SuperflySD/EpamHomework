@@ -154,14 +154,21 @@ public class TreeMapTest {
         }
     }
 
-   /* @Test
-    public void removeFromSpeciallyConstructedTree() throws Exception {
-        treeMap.putAll(Arrays.asList(new Integer[]{10, 3, 2, 8, 7, 5, 6}));
-        treeMap.remove(8);
-        assertFalse(treeMap.contains(8));
-        assertTrue(treeMap.containsAll(Arrays.asList(new Integer[]{10, 3, 2, 7, 5, 6})));
+    @Test
+    public void removeFromSpeciallyConstructedMap() throws Exception {
+        treeMap.put(12455, "");
+        treeMap.put(12971, "");
+        treeMap.put(18947, "");
+        treeMap.put(13104, "");
 
-    }*/
+        treeMap.remove(12971);
+        treeMap.remove(13104);
+
+        assertFalse(treeMap.containsKey(12971));
+        assertFalse(treeMap.containsKey(13104));
+        assertTrue(treeMap.containsKey(12455));
+        assertTrue(treeMap.containsKey(18947));
+    }
 
 
     @Test
@@ -214,7 +221,7 @@ public class TreeMapTest {
     }
 
     @Test
-    public void entrySet() throws Exception {
+    public void entrySetContainsKeysOfStandardSet() throws Exception {
         Random rnd = new Random();
         Map<Integer, String> standardMap = new HashMap<>();
         for (int i = 0; i < 10000; i++) {
@@ -230,21 +237,50 @@ public class TreeMapTest {
 
     @Test
     public void removeWithIterator() throws Exception {
-        List<Integer> list = new ArrayList<>();
-        for (int i = 0; i < 10000; i++) {
-            if (i % 7 != 0)
-                list.add(i);
-        }
+        Map<Integer, String> treeMap1 = new TreeMap<>();
         Random rnd = new Random();
-        while (list.size() != 0) {
-            Integer rn = rnd.nextInt(10000);
-            if (list.contains(rn)) {
-                list.remove((Object) rn);
-                treeMap.put(rn, "v" + rn);
+        Map<Integer, String> standardMap = new java.util.TreeMap<>();
+        List<Integer> list = new ArrayList<>();
+        for (int j = 0; j < 1000; j++) {
+            treeMap1 = new TreeMap<>();
+
+            treeMap1.put(1, "");
+            treeMap1.put(7, "");
+            treeMap1.put(25, "");
+            treeMap1.put(14, "");
+
+
+            /*for (int i = 0; i < 4; i++) {
+                int t = rnd.nextInt(20000);
+                standardMap.put(t, "" + i);
+                treeMap1.put(t, "" + i);
+                list.add(t);
+            }*/
+            Iterator<Map.Entry<Integer, String>> iterator = treeMap1.entrySet().iterator();
+          //  Iterator<Map.Entry<Integer, String>> standardIterator = standardMap.entrySet().iterator();
+
+            for (; iterator.hasNext(); ) {
+                Map.Entry<Integer, String> entry = iterator.next();
+
+                if (entry.getKey() % 7 == 0) {
+                    iterator.remove();
+                  //  assertFalse(entry+ "--- ", treeMap1.containsKey(entry.getKey()));
+                    //iterator.remove();
+                }
             }
+            iterator = treeMap1.entrySet().iterator();
+         //   standardIterator = standardMap.entrySet().iterator();
+
+            for (; iterator.hasNext(); ) {
+                Map.Entry<Integer, String> entry = iterator.next();
+                assertTrue ("++++++"+ entry, entry.getKey() % 7 != 0);
+                  //  assertFalse("+++" + entry, treeMap1.containsKey(entry.getKey()));
+                //  else
+                //     assertTrue(treeMap.containsKey(stEntry.getKey()));
+
+            }
+            standardMap.clear();
+            list.clear();
         }
     }
-
-
 }
-
