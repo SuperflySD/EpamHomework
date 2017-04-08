@@ -3,7 +3,7 @@ package LinkedListImpl;
 import java.util.*;
 
 public class LinkedList<T> implements List<T> {
-    private Node<T> head = new Node<T>(null, null, null);
+    private final Node<T> head = new Node<>(null, null, null);
     private int size = 0;
 
     {
@@ -30,8 +30,18 @@ public class LinkedList<T> implements List<T> {
     }
 
     @Override
+    public boolean containsAll(Collection<?> c) {
+        if (c == null)
+            throw new NullPointerException("Input collection can't be null");
+        for (Object i : c)
+            if (!(this.contains(i)))
+                return false;
+        return true;
+    }
+
+    @Override
     public Iterator<T> iterator() {
-        return new LLIterator<>();
+        return new LIterator<>();
     }
 
     @Override
@@ -45,7 +55,9 @@ public class LinkedList<T> implements List<T> {
 
     @Override
     public <T> T[] toArray(T[] a) {
-        Iterator<T> iterator = new LLIterator<>();
+        if (a == null)
+            throw new NullPointerException("Input array can't be null");
+        Iterator<T> iterator = new LIterator<>();
         for (int i = 0; i < Math.min(this.size, a.length); i++)
             a[i] = iterator.next();
         return a;
@@ -61,43 +73,36 @@ public class LinkedList<T> implements List<T> {
     }
 
     @Override
-    public boolean remove(Object o) {
-        Node<T> curNode = this.head.next;
-        while (curNode != head) {
-            if (curNode.value.equals(o)) {
-                curNode.previous.next = curNode.next;
-                curNode.next.previous = curNode.previous;
-                return true;
-            }
-            curNode = curNode.next;
+    public void add(int index, T value) {
+        if (index < 0 || index > this.size - 1)
+            throw new IndexOutOfBoundsException("Suggesting index is more than number of elements in the linked list or less than zero");
+
+        Node<T> curNode = this.findByIndex(index);
+        Node<T> temp = curNode.previous;
+        curNode.previous = new Node<>(value, curNode, curNode.previous);
+        temp.next = curNode.previous;
+        this.size++;
+    }
+
+    @Override
+    public boolean addAll(Collection<? extends T> c) {
+        if (c == null)
+            throw new NullPointerException("Input collection can't be null");
+        for (T i : c) {
+            this.add(i);
+            this.size++;
         }
         return false;
     }
 
     @Override
-    public boolean containsAll(Collection<?> c) {
-        for (Object i : c)
-            if (!(this.contains(i)))
-                return false;
-        return true;
-    }
-
-    @Override
-    public boolean addAll(Collection<? extends T> c) {
-        for (T i : c)
-            this.add(i);
-        return false;
-    }
-
-    @Override
     public boolean addAll(int index, Collection<? extends T> c) {
-        if (index > this.size)
-            throw new IndexOutOfBoundsException("Inserting index is more than number of elements in the linked list");
+        if (c == null)
+            throw new NullPointerException("Input collection can't be null");
+        if (index > this.size || index < 0)
+            throw new IndexOutOfBoundsException("Suggesting index is more than number of elements in the linked list or less than zero");
 
-        Node<T> curNode = this.head.next;
-        for (int i = 0; i < index; i++)
-            curNode = curNode.next;
-
+        Node<T> curNode = this.findByIndex(index);
         for (T value : c) {
             Node<T> temp = curNode.previous;
             curNode.previous = new Node<>(value, curNode, curNode.previous);
@@ -108,63 +113,146 @@ public class LinkedList<T> implements List<T> {
     }
 
     @Override
+    public boolean remove(Object o) {
+        if (this.head.next == this.head)
+            return false;
+        if (!(o.getClass().isInstance(this.head.next.value)))
+            throw new ClassCastException("Passing parameter type doesn't correspond to the parametrized type of the collection");
+        Node<T> curNode = this.head.next;
+        while (curNode != head) {
+            if (curNode.value.equals(o)) {
+                curNode.previous.next = curNode.next;
+                curNode.next.previous = curNode.previous;
+                this.size--;
+                return true;
+            }
+            curNode = curNode.next;
+        }
+        return false;
+    }
+
+    @Override
     public boolean removeAll(Collection<?> c) {
-        return false;
-    }
-
-    @Override
-    public boolean retainAll(Collection<?> c) {
-        return false;
-    }
-
-    @Override
-    public void clear() {
-
-    }
-
-    @Override
-    public T get(int index) {
-        return null;
-    }
-
-    @Override
-    public T set(int index, T element) {
-        return null;
-    }
-
-    @Override
-    public void add(int index, T element) {
-
+        if (c == null)
+            throw new NullPointerException("Input collection can't be null");
+        boolean flag = false;
+        for (Object o : c)
+            if (this.remove(o)) {
+                flag = true;
+            }
+        return flag;
     }
 
     @Override
     public T remove(int index) {
-        return null;
+        Node<T> curNode = this.findByIndex(index);
+        curNode.previous.next = curNode.next;
+        curNode.next.previous = curNode.previous;
+        this.size--;
+        return curNode.value;
+    }
+
+    @Override
+    public boolean retainAll(Collection<?> c) {
+        if (c == null)
+            throw new NullPointerException("Input collection can't be null");
+        boolean flag = false;
+        for (T val : this)
+            if (!(c.contains(val))) {
+                this.remove(val);
+                flag = true;
+                this.size--;
+            }
+        return flag;
+    }
+
+    @Override
+    public void clear() {
+        for (T val : this)
+            this.remove(val);
+        this.size = 0;
+    }
+
+    @Override
+    public T get(int index) {
+        if (index < 0 || index > this.size - 1)
+            throw new IndexOutOfBoundsException("Suggesting index is more than number of elements in the linked list or less than zero");
+
+        Node<T> curNode = this.findByIndex(index);
+        return curNode.value;
+    }
+
+    @Override
+    public T set(int index, T value) {
+        if (index < 0 || index > this.size - 1)
+            throw new IndexOutOfBoundsException("Suggesting index is more than number of elements in the linked list or less than zero");
+
+        Node<T> curNode = this.findByIndex(index);
+        T temp = curNode.value;
+        curNode.value = value;
+        return temp;
     }
 
     @Override
     public int indexOf(Object o) {
-        return 0;
+        int i = 0;
+        for (T val : this) {
+            if (val.equals(o))
+                return i;
+            i++;
+        }
+        return -1;
     }
 
     @Override
     public int lastIndexOf(Object o) {
-        return 0;
+        int i = 0;
+        int target = -1;
+        for (T val : this) {
+            if (val.equals(o))
+                target=i;
+            i++;
+        }
+        return target;
     }
 
     @Override
     public ListIterator<T> listIterator() {
-        return null;
+        return new LListIterator<>();
     }
 
     @Override
     public ListIterator<T> listIterator(int index) {
-        return null;
+        return new LListIterator<>(index);
     }
 
     @Override
     public List<T> subList(int fromIndex, int toIndex) {
-        return null;
+        Node<T> start = this.findByIndex(fromIndex);
+        Node<T> end = this.findByIndex(toIndex);
+        LinkedList<T> newLList = new LinkedList<>();
+        while (start != end) {
+            newLList.addNode(start);
+            start = start.next;
+        }
+        return newLList;
+    }
+
+    private Node<T> findByIndex(int index) {
+        Node<T> curNode = this.head.next;
+        int i = 0;
+        while (i != index) {
+            curNode = curNode.next;
+            i++;
+        }
+        return curNode;
+    }
+
+    private void addNode(Node<T> node) {
+        Node<T> temp = this.head.previous;
+        this.head.previous = node;
+        temp.next = head.previous;
+        this.size++;
     }
 
     private class Node<T> {
@@ -179,24 +267,97 @@ public class LinkedList<T> implements List<T> {
         }
     }
 
-    public class LLIterator<T> implements java.util.Iterator<T> {
+    public class LIterator<T> implements Iterator<T> {
         Node<T> curNode = (Node<T>) LinkedList.this.head;
+        private int curPosition = -1;
 
         @Override
         public boolean hasNext() {
-            return curNode.next != LinkedList.this.head;
+            return this.curPosition < LinkedList.this.size - 1 && LinkedList.this.size != 0;
         }
 
         @Override
         public T next() {
             curNode = curNode.next;
+            curPosition++;
             return curNode.value;
         }
 
         @Override
         public void remove() {
+            if (curNode == LinkedList.this.head)
+                throw new IllegalStateException("You better call next before deleting");
+            LinkedList.this.remove(curPosition);
 
         }
+    }
+
+    public class LListIterator<E extends T> implements ListIterator<T> {
+        Node<T> curNode = (Node<T>) LinkedList.this.head;
+        int curPosition = -1;
+
+        @Override
+        public boolean hasNext() {
+            return this.curPosition < LinkedList.this.size - 1 && LinkedList.this.size != 0;
+        }
+
+        @Override
+        public T next() {
+            curNode = curNode.next;
+            curPosition++;
+            return curNode.value;
+        }
+
+        @Override
+        public boolean hasPrevious() {
+            return this.curPosition > 0 && LinkedList.this.size != 0;
+        }
+
+        @Override
+        public T previous() {
+            curNode = curNode.previous;
+            curPosition--;
+            return curNode.value;
+        }
+
+        @Override
+        public int nextIndex() {
+            return this.curPosition == LinkedList.this.size ? curPosition : curPosition + 1;
+        }
+
+        @Override
+        public int previousIndex() {
+            return (this.curPosition == 0 || this.curPosition == -1) ? -1 : curPosition - 1;
+        }
+
+        @Override
+        public void remove() {
+            if (curNode == LinkedList.this.head)
+                throw new IllegalStateException("You better call next before deleting");
+            LinkedList.this.remove(curPosition);
+        }
+
+        @Override
+        public void set(T value) {
+            if (curNode == LinkedList.this.head)
+                throw new IllegalStateException("You better call next before deleting");
+            curNode.value = value;
+        }
+
+        @Override
+        public void add(T value) {
+            LinkedList.this.add(curPosition + 1, value);
+        }
+
+        public LListIterator() {}
+        public LListIterator(int index) {
+            if (index < 0 || index > LinkedList.this.size - 1)
+                throw new IndexOutOfBoundsException("Suggesting index is more than number of elements in the linked list or less than zero");
+            this.curNode = LinkedList.this.findByIndex(index);
+            this.curPosition = index;
+        }
+
+
     }
 
 }
