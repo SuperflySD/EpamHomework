@@ -88,10 +88,9 @@ public class LinkedList<T> implements List<T> {
     public boolean addAll(Collection<? extends T> c) {
         if (c == null)
             throw new NullPointerException("Input collection can't be null");
-        for (T i : c) {
+        for (T i : c)
             this.add(i);
-            this.size++;
-        }
+
         return false;
     }
 
@@ -137,9 +136,8 @@ public class LinkedList<T> implements List<T> {
             throw new NullPointerException("Input collection can't be null");
         boolean flag = false;
         for (Object o : c)
-            if (this.remove(o)) {
+            if (this.remove(o))
                 flag = true;
-            }
         return flag;
     }
 
@@ -161,7 +159,6 @@ public class LinkedList<T> implements List<T> {
             if (!(c.contains(val))) {
                 this.remove(val);
                 flag = true;
-                this.size--;
             }
         return flag;
     }
@@ -176,7 +173,7 @@ public class LinkedList<T> implements List<T> {
     @Override
     public T get(int index) {
         if (index < 0 || index > this.size - 1)
-            throw new IndexOutOfBoundsException("Suggesting index is more than number of elements in the linked list or less than zero");
+            throw new IndexOutOfBoundsException("Suggesting index is more than number of elements in the list or less than zero");
 
         Node<T> curNode = this.findByIndex(index);
         return curNode.value;
@@ -185,7 +182,7 @@ public class LinkedList<T> implements List<T> {
     @Override
     public T set(int index, T value) {
         if (index < 0 || index > this.size - 1)
-            throw new IndexOutOfBoundsException("Suggesting index is more than number of elements in the linked list or less than zero");
+            throw new IndexOutOfBoundsException("Suggesting index is more than number of elements in the list or less than zero");
 
         Node<T> curNode = this.findByIndex(index);
         T temp = curNode.value;
@@ -206,14 +203,17 @@ public class LinkedList<T> implements List<T> {
 
     @Override
     public int lastIndexOf(Object o) {
-        int i = 0;
-        int target = -1;
-        for (T val : this) {
-            if (val.equals(o))
-                target=i;
-            i++;
+        if (this.size == 0)
+            return -1;
+        Node<T> curNode = this.head.previous;
+        int i = this.size - 1;
+        while (curNode != this.head) {
+            if (curNode.value.equals(o))
+                return i;
+            curNode = curNode.previous;
+            i--;
         }
-        return target;
+        return -1;
     }
 
     @Override
@@ -278,6 +278,8 @@ public class LinkedList<T> implements List<T> {
 
         @Override
         public T next() {
+            if (this.curPosition + 1 >= LinkedList.this.size)
+                throw new IndexOutOfBoundsException("Next call tried to access to a nonexistent element");
             curNode = curNode.next;
             curPosition++;
             return curNode.value;
@@ -303,6 +305,8 @@ public class LinkedList<T> implements List<T> {
 
         @Override
         public T next() {
+            if (this.curPosition + 1 >= LinkedList.this.size)
+                throw new IndexOutOfBoundsException("Next call tried to access to a nonexistent element");
             curNode = curNode.next;
             curPosition++;
             return curNode.value;
@@ -315,6 +319,8 @@ public class LinkedList<T> implements List<T> {
 
         @Override
         public T previous() {
+            if (this.curPosition - 1 < 0)
+                throw new IndexOutOfBoundsException("Previous call tried to access to a nonexistent element");
             curNode = curNode.previous;
             curPosition--;
             return curNode.value;
@@ -322,7 +328,7 @@ public class LinkedList<T> implements List<T> {
 
         @Override
         public int nextIndex() {
-            return this.curPosition == LinkedList.this.size ? curPosition : curPosition + 1;
+            return this.curPosition + 1;
         }
 
         @Override
@@ -340,7 +346,7 @@ public class LinkedList<T> implements List<T> {
         @Override
         public void set(T value) {
             if (curNode == LinkedList.this.head)
-                throw new IllegalStateException("You better call next before deleting");
+                throw new IllegalStateException("You better call next before setting");
             curNode.value = value;
         }
 
@@ -349,7 +355,9 @@ public class LinkedList<T> implements List<T> {
             LinkedList.this.add(curPosition + 1, value);
         }
 
-        public LListIterator() {}
+        public LListIterator() {
+        }
+
         public LListIterator(int index) {
             if (index < 0 || index > LinkedList.this.size - 1)
                 throw new IndexOutOfBoundsException("Suggesting index is more than number of elements in the linked list or less than zero");

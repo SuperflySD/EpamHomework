@@ -56,6 +56,7 @@ public class LinkedListTest {
         linkedList.add(7);
         assertTrue(linkedList.contains(7));
     }
+
     @Test
     public void addWithIndex() throws Exception {
         linkedList.add(1, 77);
@@ -84,6 +85,7 @@ public class LinkedListTest {
         assertEquals((int) linkedList.get(3), 1);
 
     }
+
     @Test
     public void remove() throws Exception {
         linkedList.add(7);
@@ -105,6 +107,7 @@ public class LinkedListTest {
     public void removeWithWrongType() throws Exception {
         linkedList.remove("str");
     }
+
     @Test
     public void removeAll() throws Exception {
         assertTrue(linkedList.removeAll(Arrays.asList(2, 3)));
@@ -119,6 +122,7 @@ public class LinkedListTest {
         assertTrue(linkedList.contains(1));
         assertFalse(linkedList.contains(2));
     }
+
     @Test
     public void containsAll() throws Exception {
         List<Integer> list = new ArrayList<>();
@@ -166,10 +170,12 @@ public class LinkedListTest {
 
     @Test
     public void lastIndexOf() throws Exception {
-        linkedList.add(0,4);
-        assertEquals((int)linkedList.lastIndexOf(4), 5);
+        linkedList.add(0, 4);
+        assertEquals((int) linkedList.lastIndexOf(4), 5);
         linkedList.remove(5);
-        assertEquals((int)linkedList.lastIndexOf(4), 0);
+        assertEquals((int) linkedList.lastIndexOf(4), 0);
+        linkedList.remove(0);
+        assertEquals((int) linkedList.lastIndexOf(4), -1);
     }
 
     @Test
@@ -181,14 +187,15 @@ public class LinkedListTest {
         for (int i : linkedList)
             assertTrue(i == j++);
     }
+
     @Test
     public void iteratorRemove() throws Exception {
         Iterator<Integer> iterator = linkedList.iterator();
         iterator.next();
         iterator.next();
         iterator.remove();
-        assertEquals((int)linkedList.get(0), 0);
-        assertEquals((int)linkedList.get(1), 2);
+        assertEquals((int) linkedList.get(0), 0);
+        assertEquals((int) linkedList.get(1), 2);
     }
 
     @Test
@@ -206,8 +213,8 @@ public class LinkedListTest {
         listIterator.next();
         listIterator.next();
         listIterator.remove();
-        assertEquals((int)linkedList.get(0), 0);
-        assertEquals((int)linkedList.get(1), 2);
+        assertEquals((int) linkedList.get(0), 0);
+        assertEquals((int) linkedList.get(1), 2);
     }
 
     @Test
@@ -216,22 +223,23 @@ public class LinkedListTest {
         listIterator.next();
         listIterator.next();
         listIterator.set(77);
-        assertEquals((int)linkedList.get(0), 0);
-        assertEquals((int)linkedList.get(1), 77);
+        assertEquals((int) linkedList.get(0), 0);
+        assertEquals((int) linkedList.get(1), 77);
     }
+
     @Test
     public void listIteratorAdd() throws Exception {
         ListIterator<Integer> listIterator = linkedList.listIterator();
         listIterator.next();
         listIterator.add(88);
-        assertEquals((int)linkedList.get(0), 0);
-        assertEquals((int)linkedList.get(1), 88);
+        assertEquals((int) linkedList.get(0), 0);
+        assertEquals((int) linkedList.get(1), 88);
     }
 
     @Test
     public void listIteratorWithIndex() throws Exception {
         ListIterator<Integer> listIterator = linkedList.listIterator(1);
-        assertEquals((int)listIterator.next(), 2);
+        assertEquals((int) listIterator.next(), 2);
     }
 
     @Test

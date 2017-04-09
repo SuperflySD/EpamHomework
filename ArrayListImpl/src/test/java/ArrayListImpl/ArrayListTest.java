@@ -23,7 +23,7 @@ public class ArrayListTest {
     public void isEmpty() throws Exception {
         assertFalse(arrayList.isEmpty());
         arrayList.clear();
-        //  assertTrue(arrayList.isEmpty());
+        assertTrue(arrayList.isEmpty());
     }
 
     @Test
@@ -47,22 +47,31 @@ public class ArrayListTest {
     public void toArrayObjects() throws Exception {
         Object[] arr = arrayList.toArray();
         int j = 0;
-        // for (Object i : arr)
-        // assertTrue(arr[j++].equals(i));
+        for (Object i : arr)
+            assertEquals(arr[j++], i);
     }
 
     @Test
     public void toArrayWithType() throws Exception {
         Integer[] arr = new Integer[7];
         arr = arrayList.toArray(arr);
-        // for (int i=0; i<arrayList.size(); i++)
-        ///   assertTrue(arr[i].equals(arrayList[i]));
+        for (int i = 0; i < arrayList.size(); i++)
+            assertEquals(arr[i], arrayList.get(i));
     }
 
     @Test
     public void add() throws Exception {
         arrayList.add(7);
         assertTrue(arrayList.contains(7));
+    }
+
+    @Test
+    public void checkCapacityInflation() throws Exception {
+        arrayList.clear();
+        for (int i = 0; i < 100; i++) {
+            arrayList.add(i);
+            assertTrue(arrayList.contains(i));
+        }
     }
 
     @Test
@@ -194,6 +203,18 @@ public class ArrayListTest {
         assertEquals((int) arrayList.get(1), 2);
     }
 
+    @Test(expected = ConcurrentModificationException.class)
+    public void addingWhileIteration() throws Exception {
+        for (int val : arrayList)
+            arrayList.add(5);
+    }
+    @Test(expected = ConcurrentModificationException.class)
+    public void removingWhileIteration() throws Exception {
+        for (int val : arrayList)
+            arrayList.remove(3);
+    }
+
+
     @Test
     public void listIterator() throws Exception {
         ListIterator<Integer> listIterator = arrayList.listIterator();
@@ -262,7 +283,7 @@ public class ArrayListTest {
     @Test
     public void subListLastIndexOf() throws Exception {
         arrayList.add(7);
-        arrayList.add(1,7);
+        arrayList.add(1, 7);
         List<Integer> subList = arrayList.subList(1, 7);
         assertEquals(subList.lastIndexOf(7), 5);
     }
@@ -271,8 +292,10 @@ public class ArrayListTest {
     public void subListIteratorDoesntGoToMainList() throws Exception {
         List<Integer> subList = arrayList.subList(1, 3);
         int i = 0;
-        for (int val : subList)
+        for (int val : subList) {
+            assertEquals(val, (int) arrayList.get(i + 1));
             i++;
+        }
         assertEquals(i, 2);
     }
 

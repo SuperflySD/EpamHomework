@@ -2,10 +2,12 @@ package ArrayListImpl;
 
 import java.util.*;
 
+
 public class ArrayList<T> implements List<T> {
     private int capacity = 10;
     private T[] data = (T[]) new Object[capacity];
     private int size = 0;
+    private long modCount = Long.MIN_VALUE;
 
     @Override
     public int size() {
@@ -56,6 +58,7 @@ public class ArrayList<T> implements List<T> {
 
         this.data[this.size] = value;
         size++;
+        this.modCount += 1L;
         return true;
     }
 
@@ -66,6 +69,7 @@ public class ArrayList<T> implements List<T> {
         System.arraycopy(this.data, index, this.data, index + 1, this.size - index);
         this.data[index] = element;
         this.size++;
+        this.modCount += 1L;
     }
 
     @Override
@@ -90,7 +94,7 @@ public class ArrayList<T> implements List<T> {
         int i = index;
         for (T val : c)
             this.data[i++] = val;
-
+        this.modCount += 1L;
         return true;
     }
 
@@ -105,6 +109,7 @@ public class ArrayList<T> implements List<T> {
             if (this.data[i].equals(o)) {
                 System.arraycopy(this.data, i + 1, this.data, i, this.size - i);
                 this.size--;
+                this.modCount += 1L;
                 return true;
             }
         return false;
@@ -118,6 +123,7 @@ public class ArrayList<T> implements List<T> {
         T temp = this.data[index];
         System.arraycopy(this.data, index + 1, this.data, index, this.size - index);
         this.size--;
+        this.modCount += 1L;
         return temp;
     }
 
@@ -142,6 +148,7 @@ public class ArrayList<T> implements List<T> {
             if (!(c.contains(val))) {
                 this.remove(val);
                 flag = true;
+                this.modCount += 1L;
             }
         return flag;
     }
@@ -149,7 +156,8 @@ public class ArrayList<T> implements List<T> {
     @Override
     public void clear() {
         this.size = 0;
-        this.data = Arrays.copyOf(this.data, Math.max(this.capacity, this.size));
+        this.data = (T[]) new Object[10];
+        this.modCount += 1L;
     }
 
     public void trimToSize() {
@@ -214,12 +222,16 @@ public class ArrayList<T> implements List<T> {
     }
 
     private void checkAndChangeCapacity(int numAdd) {
-        if ((this.size + numAdd) * 100 / this.capacity > 80)
-            this.data = Arrays.copyOf(this.data, (this.size + numAdd) * 3 / 2);
+        if ((this.size + numAdd) * 100 / this.capacity > 80) {
+            this.capacity = (this.capacity + numAdd) * 3 / 2;
+            this.data = Arrays.copyOf(this.data, this.capacity);
+        }
     }
 
     public class ALIterator<E extends T> implements Iterator<T> {
         private int curPosition = -1;
+        private long modCount = ArrayList.this.modCount;
+
 
         @Override
         public boolean hasNext() {
@@ -230,6 +242,9 @@ public class ArrayList<T> implements List<T> {
         public T next() {
             if (this.curPosition + 1 >= ArrayList.this.size)
                 throw new IndexOutOfBoundsException("Next call tried to access to a nonexistent element");
+            if (this.modCount != ArrayList.this.modCount)
+                throw new ConcurrentModificationException("Collection has been concurrently modified not via iterator");
+
             this.curPosition++;
             return ArrayList.this.data[this.curPosition];
         }
@@ -245,6 +260,7 @@ public class ArrayList<T> implements List<T> {
 
     public class AListIterator<E extends T> implements ListIterator<T> {
         int curPosition = -1;
+        private long modCount = ArrayList.this.modCount;
 
         @Override
         public boolean hasNext() {
@@ -255,6 +271,9 @@ public class ArrayList<T> implements List<T> {
         public T next() {
             if (this.curPosition + 1 >= ArrayList.this.size)
                 throw new IndexOutOfBoundsException("Next call tried to access to a nonexistent element");
+            if (this.modCount != ArrayList.this.modCount)
+                throw new ConcurrentModificationException("Collection has been concurrently modified not via iterator");
+
             this.curPosition++;
             return ArrayList.this.data[this.curPosition];
         }
@@ -268,6 +287,9 @@ public class ArrayList<T> implements List<T> {
         public T previous() {
             if (this.curPosition - 1 < 0)
                 throw new IndexOutOfBoundsException("Previous call tried to access to a nonexistent element");
+            if (this.modCount!=ArrayList.this.modCount)
+                throw new ConcurrentModificationException("Collection has been concurrently modified not via iterator");
+
             this.curPosition--;
             return ArrayList.this.data[this.curPosition];
         }
@@ -311,14 +333,13 @@ public class ArrayList<T> implements List<T> {
 
             this.curPosition = index;
         }
-
-
     }
 
     public class SubList<E extends T> extends ArrayList<T> {
         private int size;
         private int start;
         private int end;
+        private long modCount = ArrayList.this.modCount;
 
 
         private SubList(int start, int end) {
@@ -365,7 +386,7 @@ public class ArrayList<T> implements List<T> {
             if (a == null)
                 throw new NullPointerException("Input array can't be null");
 
-            for (int i = start; i < Math.min(this.end, a.length+start); i++)
+            for (int i = start; i < Math.min(this.end, a.length + start); i++)
                 a[i] = (T) ArrayList.this.data[i];
             return a;
         }
@@ -375,15 +396,15 @@ public class ArrayList<T> implements List<T> {
             if (index < 0 || index > this.size - 1)
                 throw new IndexOutOfBoundsException("Suggesting index is more than number of elements in the list or less than zero");
 
-            return ArrayList.this.data[index+start];
+            return ArrayList.this.data[index + start];
         }
 
         @Override
         public T set(int index, T element) {
             if (index < 0 || index > this.size - 1)
                 throw new IndexOutOfBoundsException("Suggesting index is more than number of elements in the list or less than zero");
-            T temp = ArrayList.this.data[index+start];
-            ArrayList.this.data[index+start] = element;
+            T temp = ArrayList.this.data[index + start];
+            ArrayList.this.data[index + start] = element;
             return temp;
         }
 
@@ -391,7 +412,7 @@ public class ArrayList<T> implements List<T> {
         public int indexOf(Object o) {
             for (int i = this.start; i < this.end; i++)
                 if (ArrayList.this.data[i].equals(o))
-                    return i-this.start;
+                    return i - this.start;
 
             return -1;
         }
@@ -400,9 +421,31 @@ public class ArrayList<T> implements List<T> {
         public int lastIndexOf(Object o) {
             for (int i = this.end - 1; i >= this.start; i--)
                 if (ArrayList.this.data[i].equals(o))
-                    return i-start;
+                    return i - start;
 
             return -1;
+        }
+
+        public Iterator<T> iterator() {
+            return new Iterator() {
+                int curPosition = -1;
+
+                @Override
+                public boolean hasNext() {
+                    return this.curPosition < SubList.this.size - 1 && SubList.this.size != 0;
+                }
+
+                @Override
+                public Object next() {
+                    if (this.curPosition + 1 >= SubList.this.size)
+                        throw new IndexOutOfBoundsException("Next call tried to access to a nonexistent element");
+                    if (SubList.this.modCount != ArrayList.this.modCount)
+                        throw new ConcurrentModificationException("Collection has been concurrently modified not via iterator");
+
+                    this.curPosition++;
+                    return ArrayList.this.data[this.curPosition + SubList.this.start];
+                }
+            };
         }
 
         @Override
@@ -456,18 +499,13 @@ public class ArrayList<T> implements List<T> {
         }
 
         @Override
-        public Iterator<T> iterator() {
-            throw new UnsupportedOperationException("Iterator of sublist isn't permitted");
-        }
-
-        @Override
         public ListIterator<T> listIterator() {
             throw new UnsupportedOperationException("Iterator of sublist isn't permitted");
         }
 
         @Override
         public ListIterator<T> listIterator(int index) {
-            throw new UnsupportedOperationException("Iterator of sublist isn't permitted");
+            throw new UnsupportedOperationException("List iterator of sublist isn't permitted");
         }
 
         @Override
