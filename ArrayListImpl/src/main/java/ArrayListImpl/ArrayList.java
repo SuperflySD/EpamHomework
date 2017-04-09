@@ -144,11 +144,10 @@ public class ArrayList<T> implements List<T> {
         if (c == null)
             throw new NullPointerException("Input collection can't be null");
         boolean flag = false;
-        for (T val : this)
-            if (!(c.contains(val))) {
-                this.remove(val);
+        for (int i=0; i<this.size; i++)
+            if (!(c.contains(this.data[i]))) {
+                this.remove(this.data[i]);
                 flag = true;
-                this.modCount += 1L;
             }
         return flag;
     }
