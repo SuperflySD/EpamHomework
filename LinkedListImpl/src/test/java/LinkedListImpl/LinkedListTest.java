@@ -194,8 +194,16 @@ public class LinkedListTest {
         iterator.next();
         iterator.next();
         iterator.remove();
+        iterator.next();
         assertEquals((int) linkedList.get(0), 0);
         assertEquals((int) linkedList.get(1), 2);
+    }
+
+    @Test(expected = ConcurrentModificationException.class)
+    public void removeWhileIteration() throws Exception {
+        for (int val : linkedList)
+            linkedList.remove(2);
+
     }
 
     @Test
@@ -213,6 +221,7 @@ public class LinkedListTest {
         listIterator.next();
         listIterator.next();
         listIterator.remove();
+        listIterator.next();
         assertEquals((int) linkedList.get(0), 0);
         assertEquals((int) linkedList.get(1), 2);
     }

@@ -199,6 +199,7 @@ public class ArrayListTest {
         iterator.next();
         iterator.next();
         iterator.remove();
+        iterator.next();
         assertEquals((int) arrayList.get(0), 0);
         assertEquals((int) arrayList.get(1), 2);
     }
@@ -230,6 +231,7 @@ public class ArrayListTest {
         listIterator.next();
         listIterator.next();
         listIterator.remove();
+        listIterator.next();
         assertEquals((int) arrayList.get(0), 0);
         assertEquals((int) arrayList.get(1), 2);
     }

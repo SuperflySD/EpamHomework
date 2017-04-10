@@ -5,6 +5,7 @@ import java.util.*;
 public class LinkedList<T> implements List<T> {
     private final Node<T> head = new Node<>(null, null, null);
     private int size = 0;
+    private long modCount = Long.MIN_VALUE;
 
     {
         this.head.next = head;
@@ -69,6 +70,7 @@ public class LinkedList<T> implements List<T> {
         this.head.previous = new Node<>(value, head, head.previous);
         temp.next = head.previous;
         this.size++;
+        this.modCount += 1L;
         return true;
     }
 
@@ -82,6 +84,7 @@ public class LinkedList<T> implements List<T> {
         curNode.previous = new Node<>(value, curNode, curNode.previous);
         temp.next = curNode.previous;
         this.size++;
+        this.modCount += 1L;
     }
 
     @Override
@@ -107,6 +110,7 @@ public class LinkedList<T> implements List<T> {
             curNode.previous = new Node<>(value, curNode, curNode.previous);
             temp.next = curNode.previous;
             this.size++;
+            this.modCount += 1L;
         }
         return true;
     }
@@ -123,6 +127,7 @@ public class LinkedList<T> implements List<T> {
                 curNode.previous.next = curNode.next;
                 curNode.next.previous = curNode.previous;
                 this.size--;
+                this.modCount += 1L;
                 return true;
             }
             curNode = curNode.next;
@@ -143,10 +148,14 @@ public class LinkedList<T> implements List<T> {
 
     @Override
     public T remove(int index) {
+        if (index < 0 || index > this.size - 1)
+            throw new IndexOutOfBoundsException("Suggesting index is more than number of elements in the list or less than zero");
+
         Node<T> curNode = this.findByIndex(index);
         curNode.previous.next = curNode.next;
         curNode.next.previous = curNode.previous;
         this.size--;
+        this.modCount += 1L;
         return curNode.value;
     }
 
@@ -155,9 +164,10 @@ public class LinkedList<T> implements List<T> {
         if (c == null)
             throw new NullPointerException("Input collection can't be null");
         boolean flag = false;
-        for (T val : this)
-            if (!(c.contains(val))) {
-                this.remove(val);
+        Iterator<T> iter = this.iterator();
+        while (iter.hasNext())
+            if (!(c.contains(iter.next()))) {
+                iter.remove();
                 flag = true;
             }
         return flag;
@@ -165,8 +175,11 @@ public class LinkedList<T> implements List<T> {
 
     @Override
     public void clear() {
-        for (T val : this)
-            this.remove(val);
+        Iterator<T> iter = this.iterator();
+        while (iter.hasNext()) {
+            iter.next();
+            iter.remove();
+        }
         this.size = 0;
     }
 
@@ -270,6 +283,7 @@ public class LinkedList<T> implements List<T> {
     public class LIterator<T> implements Iterator<T> {
         Node<T> curNode = (Node<T>) LinkedList.this.head;
         private int curPosition = -1;
+        private long modCount = LinkedList.this.modCount;
 
         @Override
         public boolean hasNext() {
@@ -280,6 +294,9 @@ public class LinkedList<T> implements List<T> {
         public T next() {
             if (this.curPosition + 1 >= LinkedList.this.size)
                 throw new IndexOutOfBoundsException("Next call tried to access to a nonexistent element");
+            if (this.modCount != LinkedList.this.modCount)
+                throw new ConcurrentModificationException("Collection has been concurrently modified not via iterator");
+
             curNode = curNode.next;
             curPosition++;
             return curNode.value;
@@ -289,7 +306,8 @@ public class LinkedList<T> implements List<T> {
         public void remove() {
             if (curNode == LinkedList.this.head)
                 throw new IllegalStateException("You better call next before deleting");
-            LinkedList.this.remove(curPosition);
+            if (LinkedList.this.remove(curPosition) != null)
+                LinkedList.this.modCount -= 1L;
 
         }
     }
@@ -297,6 +315,7 @@ public class LinkedList<T> implements List<T> {
     public class LListIterator<E extends T> implements ListIterator<T> {
         Node<T> curNode = (Node<T>) LinkedList.this.head;
         int curPosition = -1;
+        private long modCount = LinkedList.this.modCount;
 
         @Override
         public boolean hasNext() {
@@ -307,6 +326,9 @@ public class LinkedList<T> implements List<T> {
         public T next() {
             if (this.curPosition + 1 >= LinkedList.this.size)
                 throw new IndexOutOfBoundsException("Next call tried to access to a nonexistent element");
+            if (this.modCount != LinkedList.this.modCount)
+                throw new ConcurrentModificationException("Collection has been concurrently modified not via iterator");
+
             curNode = curNode.next;
             curPosition++;
             return curNode.value;
@@ -321,6 +343,9 @@ public class LinkedList<T> implements List<T> {
         public T previous() {
             if (this.curPosition - 1 < 0)
                 throw new IndexOutOfBoundsException("Previous call tried to access to a nonexistent element");
+            if (this.modCount != LinkedList.this.modCount)
+                throw new ConcurrentModificationException("Collection has been concurrently modified not via iterator");
+
             curNode = curNode.previous;
             curPosition--;
             return curNode.value;
@@ -340,7 +365,8 @@ public class LinkedList<T> implements List<T> {
         public void remove() {
             if (curNode == LinkedList.this.head)
                 throw new IllegalStateException("You better call next before deleting");
-            LinkedList.this.remove(curPosition);
+            if (LinkedList.this.remove(curPosition) != null)
+                LinkedList.this.modCount -= 1L;
         }
 
         @Override
@@ -353,6 +379,7 @@ public class LinkedList<T> implements List<T> {
         @Override
         public void add(T value) {
             LinkedList.this.add(curPosition + 1, value);
+            LinkedList.this.modCount -= 1L;
         }
 
         public LListIterator() {

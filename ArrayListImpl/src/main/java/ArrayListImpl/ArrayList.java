@@ -219,9 +219,8 @@ public class ArrayList<T> implements List<T> {
     public List<T> subList(int fromIndex, int toIndex) {
         return new SubList(fromIndex, toIndex);
     }
-
     private void checkAndChangeCapacity(int numAdd) {
-        if ((this.size + numAdd) * 100 / this.capacity > 80) {
+        if ((this.size + numAdd) > this.capacity) {
             this.capacity = (this.capacity + numAdd) * 3 / 2;
             this.data = Arrays.copyOf(this.data, this.capacity);
         }
@@ -253,7 +252,8 @@ public class ArrayList<T> implements List<T> {
             if (this.curPosition < 0)
                 throw new IllegalStateException("You better call next before deleting");
 
-            ArrayList.this.remove(curPosition);
+            if(ArrayList.this.remove(curPosition)!=null)
+                ArrayList.this.modCount -= 1L;
         }
     }
 
@@ -308,7 +308,8 @@ public class ArrayList<T> implements List<T> {
             if (this.curPosition < 0)
                 throw new IllegalStateException("You better call next before deleting");
 
-            ArrayList.this.remove(curPosition);
+            if(ArrayList.this.remove(curPosition)!=null)
+                ArrayList.this.modCount -= 1L;
         }
 
         @Override
@@ -321,6 +322,7 @@ public class ArrayList<T> implements List<T> {
         @Override
         public void add(T value) {
             ArrayList.this.add(curPosition + 1, value);
+                ArrayList.this.modCount -= 1L;
         }
 
         public AListIterator() {
