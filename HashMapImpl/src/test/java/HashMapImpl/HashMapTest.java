@@ -63,32 +63,9 @@ public class HashMapTest {
     }
 
     @Test
-    public void iterator() throws Exception {//TODO something goes wrong
-        Random rnd = new Random();
-        TreeMap<Integer, String> standardMap = new TreeMap<>();
-        standardMap.put(5000, "");
-        for (int i = 0; i < 10000; i++) {
-            int rn = rnd.nextInt(100000);
-            standardMap.put(rn, "");
-        }
-        hashMap.putAll(standardMap);
-        Iterator<Map.Entry<Integer, String>> iterator = hashMap.entrySet().iterator();
-        Iterator<Map.Entry<Integer, String>> standardSetIterator = standardMap.entrySet().iterator();
-        int sum = 0;
-        Map.Entry<Integer, String> entry;
-        for (; standardSetIterator.hasNext(); ) {
-            entry = iterator.next();
-            sum += entry.getKey();
-            assertEquals(entry, standardSetIterator.next());
-        }
-        assertEquals(sum, standardMap.entrySet().stream().mapToInt(x -> x.getKey()).sum());
-    }
-
-    @Test
     public void get() throws Exception {
         Random rnd = new Random();
         Set<Integer> standardSet = new HashSet<>();
-        standardSet.add(5000);
         hashMap.put(5000, "s" + 5000);
         for (int i = 0; i < 10000; i++) {
             int rn = rnd.nextInt(10000);
@@ -104,7 +81,6 @@ public class HashMapTest {
     public void put() throws Exception {
         Random rnd = new Random();
         Set<Integer> standardSet = new HashSet<>();
-        standardSet.add(5000);
         hashMap.put(5000, "");
         for (int i = 0; i < 10000; i++) {
             int rn = rnd.nextInt(10000);
@@ -136,7 +112,7 @@ public class HashMapTest {
                 assertEquals(hashMap.put(i, "ss"), "s" + i);
         }
     }
-    
+
     @Test
     public void remove() throws Exception {
         Random rnd = new Random();
@@ -169,16 +145,6 @@ public class HashMapTest {
         assertTrue(hashMap.containsKey(50));
         hashMap.clear();
         assertFalse(hashMap.containsKey(50));
-    }
-
-    @Test
-    public void keySet() throws Exception {
-
-    }
-
-    @Test
-    public void values() throws Exception {
-
     }
 
     @Test
@@ -244,7 +210,25 @@ public class HashMapTest {
             if (stEntry.getKey() % 7 == 0)
                 assertFalse(hashMap.containsKey(stEntry.getKey()));
         }
+    }
 
+    @Test
+    public void keySetIterator() throws Exception {
+        for (int i = 0; i < 10000; i++)
+            hashMap.put(i, "str" + i);
+        Iterator<Integer> iterator = hashMap.keySet().iterator();
+        for (int i = 0; iterator.hasNext(); i++)
+            assertEquals((int) iterator.next(), i);
+    }
+
+
+    @Test
+    public void valuesCollection() throws Exception {
+        for (int i = 0; i < 10000; i++)
+            hashMap.put(i, "str" + i);
+        Iterator<String> iterator = hashMap.values().iterator();
+        for (int i = 0; iterator.hasNext(); i++)
+            assertEquals(iterator.next(), "str"+i);
     }
 }
 

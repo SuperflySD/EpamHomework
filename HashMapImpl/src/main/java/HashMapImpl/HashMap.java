@@ -104,7 +104,7 @@ public class HashMap<K, V> implements Map<K, V> {
 
     @Override
     public void clear() {
-        this.capacity=17;
+        this.capacity = 17;
         this.data = new LinkedList[capacity];
         for (int i = 0; i < this.capacity; i++)
             this.data[i] = new LinkedList();
@@ -114,14 +114,13 @@ public class HashMap<K, V> implements Map<K, V> {
 
     @Override
     public Set<K> keySet() {
-        return null;
+        return this.new KeySet();
     }
 
     @Override
     public Collection<V> values() {
-        return null;
+        return this.new ValuesCollection();
     }
-
 
     @Override
     public Set<Map.Entry<K, V>> entrySet() {
@@ -168,7 +167,7 @@ public class HashMap<K, V> implements Map<K, V> {
         return null;
     }
 
-    class Entry<K, V> implements Map.Entry<K, V> {
+    private class Entry<K, V> implements Map.Entry<K, V> {
         private final K key;
         private V value;
         private Entry<K, V> left;
@@ -273,6 +272,97 @@ public class HashMap<K, V> implements Map<K, V> {
                     throw new ConcurrentModificationException();
                 this.curEntry = this.lList.pollFirst();
                 return curEntry;
+            }
+
+            @Override
+            public void remove() {
+                if (HashMap.this.remove(this.curEntry.key) != null)
+                    HashMap.this.modCount--;
+            }
+        }
+    }
+
+    private class KeySet extends AbstractSet<K> {
+        private long modCount = HashMap.this.modCount;
+
+        @Override
+        public Iterator<K> iterator() {
+            return this.new KeySetIterator();
+        }
+
+        @Override
+        public int size() {
+            return HashMap.this.size;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return HashMap.this.size == 0;
+        }
+
+        private class KeySetIterator implements Iterator<K> {
+            private LinkedList<Entry<K, V>> lList = new LinkedList<>();
+            private Entry<K, V> curEntry;
+
+            {
+                for (LinkedList<Entry<K, V>> lList : HashMap.this.data)
+                    this.lList.addAll(lList);
+            }
+
+            @Override
+            public boolean hasNext() {
+                return !this.lList.isEmpty();
+            }
+
+            @Override
+            public K next() {
+                if (KeySet.this.modCount != HashMap.this.modCount)
+                    throw new ConcurrentModificationException();
+                this.curEntry = this.lList.pollFirst();
+                return curEntry.getKey();
+            }
+
+            @Override
+            public void remove() {
+                if (HashMap.this.remove(this.curEntry.key) != null)
+                    HashMap.this.modCount--;
+            }
+        }
+    }
+
+    private class ValuesCollection extends AbstractCollection<V> {
+        private long modCount = HashMap.this.modCount;
+
+        @Override
+        public Iterator<V> iterator() {
+            return this.new ValuesIterator();
+        }
+
+        @Override
+        public int size() {
+            return HashMap.this.size;
+        }
+
+        private class ValuesIterator implements Iterator<V> {
+            private LinkedList<Entry<K, V>> lList = new LinkedList<>();
+            private Entry<K, V> curEntry;
+
+            {
+                for (LinkedList<Entry<K, V>> lList : HashMap.this.data)
+                    this.lList.addAll(lList);
+            }
+
+            @Override
+            public boolean hasNext() {
+                return !this.lList.isEmpty();
+            }
+
+            @Override
+            public V next() {
+                if (ValuesCollection.this.modCount != HashMap.this.modCount)
+                    throw new ConcurrentModificationException();
+                this.curEntry = this.lList.pollFirst();
+                return curEntry.getValue();
             }
 
             @Override
