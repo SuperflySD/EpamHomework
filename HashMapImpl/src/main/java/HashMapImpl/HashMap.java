@@ -2,9 +2,8 @@ package HashMapImpl;
 
 import java.util.*;
 
-
 public class HashMap<K, V> implements Map<K, V> {
-    private int capacity = 16;
+    private int capacity = 17;
     private LinkedList<Entry<K, V>>[] data = new LinkedList[capacity];
     private int size;
     private int hashCode;
@@ -27,66 +26,44 @@ public class HashMap<K, V> implements Map<K, V> {
 
     @Override
     public boolean containsKey(Object key) {
-        if (key == null)
-            throw new NullPointerException("This collection can't contain null keys");  //TODO key instance of
+        int bucketNum = 0;
+        if (key != null)
+            bucketNum = calcBucketNum(key.hashCode());
+        Entry<K, V> targetEl = this.findElInBucketByKey(bucketNum, (K) key);
+        if (targetEl == null)
+            return false;
 
-        return containsKey((K) key, root);
-    }
-
-    private boolean containsKey(K key, Entry curEntry) {
-
+        return true;
     }
 
     @Override
     public boolean containsValue(Object value) {
-        if (root == null)
-            return false;
+        for (int bucketNum = 0; bucketNum < capacity; bucketNum++)
+            for (Entry<K, V> entry : this.data[bucketNum])
+                if (entry.getValue().equals(value))
+                    return true;
 
-        return containsValue((V) value, root);
-    }
-
-    private boolean containsValue(V value, Entry curEntry) {
-        if (curEntry == null)
-            return false;
-        if (value.equals(curEntry.value))
-            return true;
-        return containsValue(value, curEntry.left) || containsValue(value, curEntry.right);
+        return false;
     }
 
     @Override
     public V get(Object key) {
-        return get((K) key, root);
-    }
-
-    private V get(K key, Entry curEntry) {
-        if (curEntry == null)
+        int bucketNum = 0;
+        if (key != null)
+            bucketNum = calcBucketNum(key.hashCode());
+        Entry<K, V> targetEl = this.findElInBucketByKey(bucketNum, (K) key);
+        if (targetEl == null)
             return null;
-        if (key.compareTo(curEntry.key) == 0)
-            return (V) curEntry.value;
-        if (key.compareTo(curEntry.key) < 0)
-            return get(key, curEntry.left);
         else
-            return get(key, curEntry.right);
+            return targetEl.value;
     }
 
     @Override
     public V put(K key, V value) {
-        if (key == null) {
-            Entry<K, V> targetEl = this.data[0].pollFirst();
-            if (targetEl == null) {
-                this.data[0].add(new Entry<>(key, value));
-                this.size++;
-                this.modCount += 1L;
-                return null;
-            } else {
-                V temp = targetEl.value;
-                targetEl.value = value;
-                this.modCount += 1L;
-                return temp;
-            }
-        }
-        int bucketNum = calcBucketNum(key.hashCode());
-        Entry<K, V> targetEl = this.findElInBucket(bucketNum, key);
+        int bucketNum = 0;
+        if (key != null)
+            bucketNum = calcBucketNum(key.hashCode());
+        Entry<K, V> targetEl = this.findElInBucketByKey(bucketNum, key);
         if (targetEl == null) {
             this.data[bucketNum].add(new Entry<>(key, value));
             this.size++;
@@ -101,18 +78,19 @@ public class HashMap<K, V> implements Map<K, V> {
     }
 
     private int calcBucketNum(int hashCode) {
-        int result = 0;
-        while (result > this.capacity - 1) {
-            while (hashCode != 0) {
-                result += hashCode % 10;
-                hashCode /= 10;
-            }
-            hashCode = result;
-        }
-        return result;
+        hashCode = Math.abs(hashCode);
+        int shift = Math.abs(Integer.numberOfLeadingZeros(hashCode) - Integer.numberOfLeadingZeros(this.capacity - 1));
+        hashCode >>>= shift;
+        if (hashCode >= this.capacity - 1)
+            hashCode = Math.abs(hashCode - this.capacity + 1);
+
+        return hashCode+1;
     }
 
-    private Entry<K, V> findElInBucket(int bucketNum, K key) {
+    private Entry<K, V> findElInBucketByKey(int bucketNum, K key) {
+        if (bucketNum == 0)
+            return this.data[0].peekFirst();
+
         for (Entry<K, V> entry : this.data[bucketNum])
             if (entry.getKey().equals(key))
                 return entry;
@@ -120,108 +98,10 @@ public class HashMap<K, V> implements Map<K, V> {
         return null;
     }
 
-
-    private V put(K key, V value, Entry curEntry) {
-        if (key.compareTo(curEntry.key) == 0) {
-            V temp = (V) curEntry.value;
-            this.hashCode -= curEntry.hashCode();
-            curEntry.value = value;
-            this.hashCode += curEntry.hashCode();
-            return temp;
-        }
-        if (key.compareTo(curEntry.key) < 0) {
-            if (curEntry.left == null) {
-                curEntry.left = new Entry(key, value);
-                this.hashCode += curEntry.left.hashCode();
-                this.size++;
-                return null;
-            } else
-                return put(key, value, curEntry.left);
-        } else {
-            if (curEntry.right == null) {
-                curEntry.right = new Entry(key, value);
-                this.hashCode += curEntry.right.hashCode();
-                this.size++;
-                return null;
-            } else
-                return put(key, value, curEntry.right);
-        }
-    }
-
-    /*@Override
+    @Override
     public V remove(Object key) {
-        Entry<K, V> remEntry = remove((K) key, root, root);
-        if (remEntry != null) {
-            this.size--;
-            this.hashCode -= remEntry.hashCode();
-            return remEntry.value;
-        } else
-            return null;
-    }
 
-    private Entry<K, V> remove(K key, Entry<K, V> curEntry, Entry<K, V> prevEntry) {
-        if (curEntry == null)
-            return null;
-
-        if (key.compareTo(curEntry.key) == 0) {
-            if (curEntry.left == null && curEntry.right == null) {
-                if (curEntry == prevEntry.left)
-                    prevEntry.left = null;
-                if (curEntry == prevEntry.right)
-                    prevEntry.right = null;
-                if (curEntry == root)
-                    root = null;
-                return curEntry;
-
-            } else if (curEntry.right == null) {
-                if (curEntry == prevEntry.left)
-                    prevEntry.left = curEntry.left;
-                if (curEntry == prevEntry.right)
-                    prevEntry.right = curEntry.left;
-                if (curEntry == root)
-                    root = curEntry.left;
-                return curEntry;
-
-            } else if (curEntry.right != null) {
-                if (curEntry == prevEntry.left) {
-                    if (curEntry.right.left == null) {
-                        prevEntry.left = curEntry.right;
-                        prevEntry.left.left = curEntry.left;
-                        return curEntry;
-                    }
-                    prevEntry.left = findReplacementInTheRightChild(curEntry.right, curEntry.right);
-                    prevEntry.left.left = curEntry.left;
-                    prevEntry.left.right = curEntry.right;
-                    this.toolForIterator = prevEntry.left;
-                }
-                if (curEntry == prevEntry.right) {
-                    if (curEntry.right.left == null) {
-                        prevEntry.right = curEntry.right;
-                        prevEntry.right.left = curEntry.left;
-                        return curEntry;
-                    }
-                    prevEntry.right = findReplacementInTheRightChild(curEntry.right, curEntry.right);
-                    prevEntry.right.left = curEntry.left;
-                    prevEntry.right.right = curEntry.right;
-                    this.toolForIterator = prevEntry.right;
-                }
-                if (curEntry == root) {
-                    if (root.right.left == null) {
-                        root = root.right;
-                        root.left = curEntry.left;
-                        return root;
-                    }
-                    root = findReplacementInTheRightChild(curEntry.right, curEntry.right);
-                    root.left = curEntry.left;
-                    root.right = curEntry.right;
-                }
-                return curEntry;
-            }
-        }
-        if (key.compareTo(curEntry.key) < 0)
-            return remove(key, curEntry.left, curEntry);
-        else
-            return remove(key, curEntry.right, curEntry);
+        return null;
     }
 
     @Override
@@ -251,7 +131,7 @@ public class HashMap<K, V> implements Map<K, V> {
     @Override
     public void clear() {
         this.size = 0;
-        root = null;
+
     }
 
     @Override
@@ -268,25 +148,12 @@ public class HashMap<K, V> implements Map<K, V> {
     private void entrySet(Map.Entry<K, V> curEntry, Set<Map.Entry<K, V>> entrySet) {
         if (curEntry == null)
             return;
-        entrySet(curNode.left, arr);
-        arr[size++] = curNode.value;
-        toArr(curNode.right, arr);
     }
-
 
     @Override
     public Set<Map.Entry<K, V>> entrySet() {
-        return new EntrySet();
+        return null;
     }
-
-    private Entry findReplacementInTheRightChild(Entry curEntry, Entry prevEntry) {
-        if (curEntry.left == null) {
-            prevEntry.left = curEntry.right;
-            return curEntry;
-        }
-        return findReplacementInTheRightChild(curEntry.left, curEntry);
-    }
-}*/
 
     class Entry<K, V> implements Map.Entry<K, V> {
         private final K key;
@@ -333,11 +200,11 @@ public class HashMap<K, V> implements Map<K, V> {
 
         @Override
         public int hashCode() {
-            int result = key.hashCode();
+            int result = this.key.hashCode();
             result = 31 * result + (value != null ? value.hashCode() : 0);
             result = 31 * result + (left != null ? left.hashCode() : 0);
             result = 31 * result + (right != null ? right.hashCode() : 0);
-            return result;
+            return Integer.parseInt(this.key.toString());
         }
 
         @Override
@@ -355,11 +222,8 @@ public class HashMap<K, V> implements Map<K, V> {
 
         @Override
         public Object[] toArray() {
-            Object[] arr = new Object[TreeMap.this.size];
-            TreeMap.this.size = 0;
-            toArr(root, arr);
-            TreeMap.this.size = arr.length;
-            return arr;
+
+            return null;
         }
 
         private void toArr(Entry entry, Object[] arr) {
@@ -372,12 +236,12 @@ public class HashMap<K, V> implements Map<K, V> {
 
         @Override
         public int size() {
-            return TreeMap.this.size;
+            return HashMap.this.size;
         }
 
         @Override
         public boolean isEmpty() {
-            return TreeMap.this.size == 0;
+            return HashMap.this.size == 0;
         }
 
         @Override
@@ -401,7 +265,7 @@ public class HashMap<K, V> implements Map<K, V> {
             Entry<K, V> curEntry = null;
 
             {
-                deque.add(root);
+                deque.add(null);
             }
 
             @Override
@@ -431,17 +295,13 @@ public class HashMap<K, V> implements Map<K, V> {
 
             @Override
             public void remove() {
-                TreeMap.this.remove(curEntry.key);
-                if (TreeMap.this.toolForIterator != null) {
-                    deque.addFirst(TreeMap.this.toolForIterator);
-                    deque.addFirst(null);
-                    TreeMap.this.toolForIterator = null;
-                }
 
             }
-        }
 
-    }
-}
         }
+    }
+
+}
+
+
 
