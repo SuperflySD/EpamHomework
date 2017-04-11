@@ -7,8 +7,8 @@ import java.util.*;
 
 import static org.junit.Assert.*;
 
-public class HashMapTest {
 
+public class HashMapTest {
     HashMap<Integer, String> hashMap = new HashMap<>();
 
     @Test
@@ -40,7 +40,7 @@ public class HashMapTest {
     @Test
     public void containsKey() throws Exception {
         Random rnd = new Random();
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 10000; i++) {
             Integer rn = rnd.nextInt();
             if (rn % 2 == 0)
                 rn = -rn;
@@ -49,27 +49,6 @@ public class HashMapTest {
             hashMap.put(rn, "");
             assertTrue(hashMap.containsKey(rn));
         }
-    }
-
-    @Test
-    public void cont() throws Exception {
-        int b = 16;
-        Random rnd = new Random();
-        int[] arr = new int[b + 1];
-
-
-        for (int i = -100000; i < 100000; i++) {
-            int a = rnd.nextInt();
-            if (a % 2 == 0)
-                a = -a;
-            int shift = Math.abs(Integer.numberOfLeadingZeros(b) - Integer.numberOfLeadingZeros(a));
-            a = a >>> shift;
-            if (a >= b)
-                a = Math.abs(a - b);
-
-            arr[a + 1]++;
-        }
-        System.out.println(Arrays.toString(arr));
     }
 
     @Test
@@ -137,6 +116,19 @@ public class HashMapTest {
     }
 
     @Test
+    public void putAll() throws Exception {
+        Random rnd = new Random();
+        Map<Integer, String> standardMap = new java.util.HashMap<>();
+        for (int i = 0; i < 10000; i++) {
+            int rn = rnd.nextInt(10000);
+            standardMap.put(rn, "s" + i);
+        }
+        hashMap.putAll(standardMap);
+        for (Integer i : standardMap.keySet())
+            assertTrue(hashMap.containsKey(i));
+    }
+
+    @Test
     public void putExistingValue() throws Exception {
         for (int i = 0; i < 1000; i++) {
             hashMap.put(i, "s" + i);
@@ -144,7 +136,7 @@ public class HashMapTest {
                 assertEquals(hashMap.put(i, "ss"), "s" + i);
         }
     }
-
+    
     @Test
     public void remove() throws Exception {
         Random rnd = new Random();
@@ -169,62 +161,6 @@ public class HashMapTest {
     }
 
     @Test
-    public void removeFromSpeciallyConstructedMap() throws Exception {
-        hashMap.put(20, "");
-        hashMap.put(15, "");
-        hashMap.put(25, "");
-        hashMap.put(22, "");
-        hashMap.put(23, "");
-        hashMap.put(21, "");
-
-        hashMap.remove(22);
-        assertFalse(hashMap.containsKey(22));
-        assertTrue(hashMap.containsKey(20));
-        assertTrue(hashMap.containsKey(21));
-    }
-
-
-    @Test
-    public void putAll() throws Exception {
-        Random rnd = new Random();
-        Map<Integer, String> standardMap = new java.util.HashMap<>();
-        for (int i = 0; i < 10000; i++) {
-            int rn = rnd.nextInt(10000);
-            standardMap.put(rn, "s" + i);
-        }
-        hashMap.putAll(standardMap);
-        for (Integer i : standardMap.keySet())
-            assertTrue(hashMap.containsKey(i));
-    }
-
-
-    @Test
-    public void equals() throws Exception {
-        TreeMap<Integer, String> treeMap1 = new TreeMap<>();
-        Random rnd = new Random();
-        for (int i = 0; i < 10000; i++) {
-            Integer rn = rnd.nextInt(70);
-            hashMap.put(rn, "" + rn);
-            treeMap1.put(rn, "" + rn);
-            assertEquals(hashMap, treeMap1);
-        }
-        hashMap.put(1, "s");
-        assertNotEquals(hashMap, treeMap1);
-    }
-
-    @Test
-    public void hashCodeTest() throws Exception {
-        hashMap.put(1, "");
-        TreeMap<Integer, String> treeMap1 = new TreeMap<>();
-        treeMap1.put(1, "");
-        treeMap1.put(2, "aaaa");
-
-        assertNotEquals(hashMap.hashCode(), treeMap1.hashCode());
-        treeMap1.remove(2);
-        assertEquals(hashMap.hashCode(), treeMap1.hashCode());
-    }
-
-    @Test
     public void clear() throws Exception {
         Random rnd = new Random();
         for (int i = 0; i < 10000; i++)
@@ -233,7 +169,6 @@ public class HashMapTest {
         assertTrue(hashMap.containsKey(50));
         hashMap.clear();
         assertFalse(hashMap.containsKey(50));
-
     }
 
     @Test
@@ -247,9 +182,34 @@ public class HashMapTest {
     }
 
     @Test
+    public void EntrySetIterator() throws Exception {
+        for (int i = 0; i < 10000; i++)
+            hashMap.put(i, "str" + i);
+        Iterator<Map.Entry<Integer, String>> iterator = hashMap.entrySet().iterator();
+        for (int i = 0; iterator.hasNext(); i++)
+            assertEquals((int) iterator.next().getKey(), i);
+    }
+
+    @Test(expected = ConcurrentModificationException.class)
+    public void addingWhileIteration() throws Exception {
+        for (int i = 0; i < 10000; i++)
+            hashMap.put(i, "str" + i);
+        for (Map.Entry<Integer, String> entry : hashMap.entrySet())
+            hashMap.put(5, "5");
+    }
+
+    @Test(expected = ConcurrentModificationException.class)
+    public void removingWhileIteration() throws Exception {
+        for (int i = 0; i < 10000; i++)
+            hashMap.put(i, "str" + i);
+        for (Map.Entry<Integer, String> entry : hashMap.entrySet())
+            hashMap.remove(5);
+    }
+
+    @Test
     public void entrySetContainsKeysOfStandardSet() throws Exception {
         Random rnd = new Random();
-        Map<Integer, String> standardMap = new HashMap<>();
+        Map<Integer, String> standardMap = new TreeMap<>();
         for (int i = 0; i < 10000; i++) {
             int t = rnd.nextInt(20000);
             standardMap.put(t, "" + i);

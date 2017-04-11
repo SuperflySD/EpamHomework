@@ -6,7 +6,7 @@ public class HashMap<K, V> implements Map<K, V> {
     private int capacity = 17;
     private LinkedList<Entry<K, V>>[] data = new LinkedList[capacity];
     private int size;
-    private int hashCode;
+    private float loadFactor = 0.75f;
     private long modCount = Long.MIN_VALUE;
 
     {
@@ -60,6 +60,8 @@ public class HashMap<K, V> implements Map<K, V> {
 
     @Override
     public V put(K key, V value) {
+        this.checkForRebuilding();
+
         int bucketNum = 0;
         if (key != null)
             bucketNum = calcBucketNum(key.hashCode());
@@ -77,61 +79,37 @@ public class HashMap<K, V> implements Map<K, V> {
         }
     }
 
-    private int calcBucketNum(int hashCode) {
-        hashCode = Math.abs(hashCode);
-        int shift = Math.abs(Integer.numberOfLeadingZeros(hashCode) - Integer.numberOfLeadingZeros(this.capacity - 1));
-        hashCode >>>= shift;
-        if (hashCode >= this.capacity - 1)
-            hashCode = Math.abs(hashCode - this.capacity + 1);
-
-        return hashCode+1;
-    }
-
-    private Entry<K, V> findElInBucketByKey(int bucketNum, K key) {
-        if (bucketNum == 0)
-            return this.data[0].peekFirst();
-
-        for (Entry<K, V> entry : this.data[bucketNum])
-            if (entry.getKey().equals(key))
-                return entry;
-
-        return null;
-    }
-
-    @Override
-    public V remove(Object key) {
-
-        return null;
-    }
-
     @Override
     public void putAll(Map<? extends K, ? extends V> m) {
         for (Map.Entry<? extends K, ? extends V> entry : m.entrySet())
             this.put(entry.getKey(), entry.getValue());
     }
 
-
     @Override
-    public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof Map))
-            return false;
-        Map<K, V> inputMap = (Map<K, V>) o;
-        if (this.size != inputMap.size())
-            return false;
-        return this.entrySet().equals(inputMap.entrySet());
-    }
-
-    @Override
-    public int hashCode() {
-        return this.hashCode;
+    public V remove(Object key) {
+        int bucketNum = 0;
+        if (key != null)
+            bucketNum = calcBucketNum(key.hashCode());
+        Entry<K, V> targetEl = this.findElInBucketByKey(bucketNum, (K) key);
+        if (targetEl == null)
+            return null;
+        else {
+            V temp = targetEl.value;
+            this.data[bucketNum].remove(targetEl);
+            this.size--;
+            this.modCount += 1L;
+            return temp;
+        }
     }
 
     @Override
     public void clear() {
+        this.capacity=17;
+        this.data = new LinkedList[capacity];
+        for (int i = 0; i < this.capacity; i++)
+            this.data[i] = new LinkedList();
         this.size = 0;
-
+        this.modCount += 1L;
     }
 
     @Override
@@ -145,13 +123,48 @@ public class HashMap<K, V> implements Map<K, V> {
     }
 
 
-    private void entrySet(Map.Entry<K, V> curEntry, Set<Map.Entry<K, V>> entrySet) {
-        if (curEntry == null)
-            return;
-    }
-
     @Override
     public Set<Map.Entry<K, V>> entrySet() {
+        return this.new EntrySet();
+    }
+
+    private int calcBucketNum(int hashCode) {
+        hashCode = Math.abs(hashCode);
+        int shift = Math.abs(Integer.numberOfLeadingZeros(hashCode) - Integer.numberOfLeadingZeros(this.capacity - 1));
+        hashCode >>>= shift;
+        if (hashCode >= this.capacity - 1)
+            hashCode = Math.abs(hashCode - this.capacity + 1);
+
+        return hashCode + 1;
+    }
+
+    private void checkForRebuilding() {
+        if (this.size > (this.capacity - 1) * this.loadFactor) {
+            this.capacity = (this.capacity - 1) * 2 + 1;
+            LinkedList<Entry<K, V>>[] tempData = this.data;
+            this.data = new LinkedList[capacity];
+            for (int i = 0; i < this.capacity; i++)
+                this.data[i] = new LinkedList();
+            for (LinkedList<Entry<K, V>> lList : tempData)
+                for (Entry<K, V> entry : lList)
+                    this.putInRebuilding(entry);
+        }
+    }
+
+    private void putInRebuilding(Entry<K, V> entry) {
+        int bucketNum = 0;
+        if (entry.getKey() != null)
+            bucketNum = calcBucketNum(entry.getKey().hashCode());
+        this.data[bucketNum].add(entry);
+    }
+
+    private Entry<K, V> findElInBucketByKey(int bucketNum, K key) {
+        if (bucketNum == 0)
+            return this.data[0].peekFirst();
+        for (Entry<K, V> entry : this.data[bucketNum])
+            if (entry.getKey().equals(key))
+                return entry;
+
         return null;
     }
 
@@ -204,7 +217,7 @@ public class HashMap<K, V> implements Map<K, V> {
             result = 31 * result + (value != null ? value.hashCode() : 0);
             result = 31 * result + (left != null ? left.hashCode() : 0);
             result = 31 * result + (right != null ? right.hashCode() : 0);
-            return Integer.parseInt(this.key.toString());
+            return result;
         }
 
         @Override
@@ -214,24 +227,20 @@ public class HashMap<K, V> implements Map<K, V> {
     }
 
     private class EntrySet extends AbstractSet<Map.Entry<K, V>> {
+        private long modCount = HashMap.this.modCount;
 
         @Override
         public Iterator<Map.Entry<K, V>> iterator() {
-            return new LazyIterator();
+            return this.new EntrySetIterator();
         }
 
         @Override
         public Object[] toArray() {
-
-            return null;
-        }
-
-        private void toArr(Entry entry, Object[] arr) {
-            if (entry == null)
-                return;
-            toArr(entry.left, arr);
-            arr[size++] = entry;
-            toArr(entry.right, arr);
+            Map.Entry[] arr = new Map.Entry[HashMap.this.size];
+            int i = 0;
+            for (Map.Entry<K, V> entry : this)
+                arr[i++] = entry;
+            return arr;
         }
 
         @Override
@@ -244,60 +253,33 @@ public class HashMap<K, V> implements Map<K, V> {
             return HashMap.this.size == 0;
         }
 
-        @Override
-        public boolean equals(Object obj) {
-            Set inputSet = (Set) obj;
-            boolean result = true;
-
-            Iterator<Map.Entry<K, V>> thisIterator = this.iterator();
-            Iterator<Map.Entry<K, V>> inputIterator = inputSet.iterator();
-            while (thisIterator.hasNext()) {
-                Map.Entry<K, V> entry1 = thisIterator.next();
-                Map.Entry<K, V> entry2 = inputIterator.next();
-                if (!(entry1.equals(entry2)))
-                    return false;
-            }
-            return result;
-        }
-
-        private class LazyIterator implements Iterator<Map.Entry<K, V>> {
-            private Deque<Entry<K, V>> deque = new LinkedList<>();
-            Entry<K, V> curEntry = null;
+        private class EntrySetIterator implements Iterator<Map.Entry<K, V>> {
+            private LinkedList<Entry<K, V>> lList = new LinkedList<>();
+            private Entry<K, V> curEntry;
 
             {
-                deque.add(null);
+                for (LinkedList<Entry<K, V>> lList : HashMap.this.data)
+                    this.lList.addAll(lList);
             }
 
             @Override
             public boolean hasNext() {
-                return !deque.isEmpty() && !(deque.peekFirst() == null && deque.size() == 1);
+                return !this.lList.isEmpty();
             }
 
             @Override
             public Map.Entry<K, V> next() {
-                while (!deque.isEmpty()) {
-                    if (deque.peekFirst() != null && deque.peekFirst().left != null) {
-                        deque.addFirst(deque.peekFirst().left);
-                        continue;
-                    }
-                    if (deque.peekFirst() == null) {
-                        deque.pollFirst();
-                        this.curEntry = deque.pollFirst();
-                        deque.addFirst(curEntry.right);
-                        break;
-                    }
-                    this.curEntry = deque.pollFirst();
-                    deque.addFirst(curEntry.right);
-                    break;
-                }
+                if (EntrySet.this.modCount != HashMap.this.modCount)
+                    throw new ConcurrentModificationException();
+                this.curEntry = this.lList.pollFirst();
                 return curEntry;
             }
 
             @Override
             public void remove() {
-
+                if (HashMap.this.remove(this.curEntry.key) != null)
+                    HashMap.this.modCount--;
             }
-
         }
     }
 
