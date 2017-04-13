@@ -19,13 +19,12 @@ public class TreeMapTest {
                 counter++;
                 assertEquals(treeMap.size(), counter);
             }
-            if (rn % 2 == 0) {
-                treeMap.remove(rn);
-                counter--;
-                assertEquals(treeMap.size(), counter);
-            }
+            if (rn % 2 == 0)
+                if (treeMap.remove(rn) != null) {
+                    counter--;
+                    assertEquals(treeMap.size(), counter);
+                }
         }
-
     }
 
     @Test
@@ -44,6 +43,12 @@ public class TreeMapTest {
             assertTrue(treeMap.containsKey(rn));
         }
     }
+    @Test(expected = ClassCastException.class)
+    public void containsWrongKey() throws Exception {
+            treeMap.put(1, "");
+            assertTrue(treeMap.containsKey(1));
+            treeMap.containsKey("s");
+    }
 
     @Test
     public void containsValue() throws Exception {
@@ -54,37 +59,29 @@ public class TreeMapTest {
             assertTrue("" + i, treeMap.containsValue("s" + i));
             assertFalse("" + i, treeMap.containsValue("s" + i + 1));
         }
-
-    }
-
-   /* @Test
-    public void iterator() throws Exception {
-        Random rnd = new Random();
-        java.util.TreeMap<Integer, String> standardSet = new java.util.TreeMap<>();
-        standardSet.put(5000, "");
-        for (int i = 0; i < 10000; i++) {
-            int rn = rnd.nextInt(100000);
-            standardSet.put(rn,"");
-        }
-        treeMap.putAll(standardSet);
-        Iterator<Integer, String> itr = treeMap.iterator();
-        Iterator<Integer> standardSetIterator = standardSet.iterator();
-        int sum = 0;
-        int value;
-        for (; standardSetIterator.hasNext();) {
-            value = itr.next();
-            sum += value;
-            assertEquals(value, (int)standardSetIterator.next());
-        }
-        assertEquals(sum, standardSet.stream().mapToInt(x -> x).sum());
     }
 
     @Test
-    public void iteratorOnVoidCollection() throws Exception {
-        Iterator<Integer> itr = treeMap.iterator();
-        assertFalse(itr.hasNext());
-
-    }*/
+    public void iterator() throws Exception {
+        Random rnd = new Random();
+        java.util.TreeMap<Integer, String> standardMap = new java.util.TreeMap<>();
+        standardMap.put(5000, "");
+        for (int i = 0; i < 10000; i++) {
+            int rn = rnd.nextInt(100000);
+            standardMap.put(rn, "");
+        }
+        treeMap.putAll(standardMap);
+        Iterator<Map.Entry<Integer, String>> iterator = treeMap.entrySet().iterator();
+        Iterator<Map.Entry<Integer, String>> standardSetIterator = standardMap.entrySet().iterator();
+        int sum = 0;
+        Map.Entry<Integer, String> entry;
+        for (; standardSetIterator.hasNext(); ) {
+            entry = iterator.next();
+            sum += entry.getKey();
+            assertEquals(entry, standardSetIterator.next());
+        }
+        assertEquals(sum, standardMap.entrySet().stream().mapToInt(x -> x.getKey()).sum());
+    }
 
     @Test
     public void get() throws Exception {
@@ -100,7 +97,6 @@ public class TreeMapTest {
         for (Integer i : standardSet)
             assertEquals(treeMap.get(i), "s" + i);
     }
-
 
     @Test
     public void put() throws Exception {
@@ -156,20 +152,17 @@ public class TreeMapTest {
 
     @Test
     public void removeFromSpeciallyConstructedMap() throws Exception {
-        treeMap.put(12455, "");
-        treeMap.put(12971, "");
-        treeMap.put(18947, "");
-        treeMap.put(13104, "");
-
-        treeMap.remove(12971);
-        treeMap.remove(13104);
-
-        assertFalse(treeMap.containsKey(12971));
-        assertFalse(treeMap.containsKey(13104));
-        assertTrue(treeMap.containsKey(12455));
-        assertTrue(treeMap.containsKey(18947));
+        treeMap.put(20, "");
+        treeMap.put(15, "");
+        treeMap.put(25, "");
+        treeMap.put(22, "");
+        treeMap.put(23, "");
+        treeMap.put(21, "");
+        treeMap.remove(22);
+        assertFalse(treeMap.containsKey(22));
+        assertTrue(treeMap.containsKey(20));
+        assertTrue(treeMap.containsKey(21));
     }
-
 
     @Test
     public void putAll() throws Exception {
@@ -200,6 +193,18 @@ public class TreeMapTest {
     }
 
     @Test
+    public void hashCodeTest() throws Exception {
+        treeMap.put(1, "");
+        TreeMap<Integer, String> treeMap1 = new TreeMap<>();
+        treeMap1.put(1, "");
+        treeMap1.put(2, "aaaa");
+
+        assertNotEquals(treeMap.hashCode(), treeMap1.hashCode());
+        treeMap1.remove(2);
+        assertEquals(treeMap.hashCode(), treeMap1.hashCode());
+    }
+
+    @Test
     public void clear() throws Exception {
         Random rnd = new Random();
         for (int i = 0; i < 10000; i++)
@@ -211,15 +216,23 @@ public class TreeMapTest {
     }
 
     @Test
-    public void keySet() throws Exception {
-
+    public void keySetIterator() throws Exception {
+        for (int i = 0; i < 10000; i++)
+            treeMap.put(i, "str" + i);
+        Iterator<Integer> iterator = treeMap.keySet().iterator();
+        for (int i = 0; iterator.hasNext(); i++)
+            assertEquals((int) iterator.next(), i);
     }
+
 
     @Test
-    public void values() throws Exception {
-
+    public void valuesCollection() throws Exception {
+        for (int i = 0; i < 10000; i++)
+            treeMap.put(i, "str" + i);
+        Iterator<String> iterator = treeMap.values().iterator();
+        for (int i = 0; iterator.hasNext(); i++)
+            assertEquals(iterator.next(), "str"+i);
     }
-
     @Test
     public void entrySetContainsKeysOfStandardSet() throws Exception {
         Random rnd = new Random();
@@ -236,51 +249,53 @@ public class TreeMapTest {
     }
 
     @Test
+    public void EntrySetIterator() throws Exception {
+        for (int i = 0; i < 10000; i++)
+            treeMap.put(i, "str" + i);
+        Iterator<Map.Entry<Integer, String>> iterator = treeMap.entrySet().iterator();
+        for (int i = 0; iterator.hasNext(); i++)
+            assertEquals((int) iterator.next().getKey(), i);
+    }
+    @Test(expected = ConcurrentModificationException.class)
+    public void addingWhileIteration() throws Exception {
+        for (int i = 0; i < 10000; i++)
+            treeMap.put(i, "str" + i);
+        for (Map.Entry<Integer, String> entry : treeMap.entrySet())
+            treeMap.put(5, "5");
+    }
+
+    @Test(expected = ConcurrentModificationException.class)
+    public void removingWhileIteration() throws Exception {
+        for (int i = 0; i < 10000; i++)
+            treeMap.put(i, "str" + i);
+        for (Map.Entry<Integer, String> entry : treeMap.entrySet())
+            treeMap.remove(5);
+    }
+
+    @Test
     public void removeWithIterator() throws Exception {
-        Map<Integer, String> treeMap1 = new TreeMap<>();
         Random rnd = new Random();
         Map<Integer, String> standardMap = new java.util.TreeMap<>();
-        List<Integer> list = new ArrayList<>();
-        for (int j = 0; j < 1000; j++) {
-            treeMap1 = new TreeMap<>();
-
-            treeMap1.put(1, "");
-            treeMap1.put(7, "");
-            treeMap1.put(25, "");
-            treeMap1.put(14, "");
-
-
-            /*for (int i = 0; i < 4; i++) {
-                int t = rnd.nextInt(20000);
-                standardMap.put(t, "" + i);
-                treeMap1.put(t, "" + i);
-                list.add(t);
-            }*/
-            Iterator<Map.Entry<Integer, String>> iterator = treeMap1.entrySet().iterator();
-          //  Iterator<Map.Entry<Integer, String>> standardIterator = standardMap.entrySet().iterator();
-
-            for (; iterator.hasNext(); ) {
-                Map.Entry<Integer, String> entry = iterator.next();
-
-                if (entry.getKey() % 7 == 0) {
-                    iterator.remove();
-                  //  assertFalse(entry+ "--- ", treeMap1.containsKey(entry.getKey()));
-                    //iterator.remove();
-                }
-            }
-            iterator = treeMap1.entrySet().iterator();
-         //   standardIterator = standardMap.entrySet().iterator();
-
-            for (; iterator.hasNext(); ) {
-                Map.Entry<Integer, String> entry = iterator.next();
-                assertTrue ("++++++"+ entry, entry.getKey() % 7 != 0);
-                  //  assertFalse("+++" + entry, treeMap1.containsKey(entry.getKey()));
-                //  else
-                //     assertTrue(treeMap.containsKey(stEntry.getKey()));
-
-            }
-            standardMap.clear();
-            list.clear();
+        for (int i = 0; i < 10000; i++) {
+            int t = rnd.nextInt(20000);
+            standardMap.put(t, "" + i);
+            treeMap.put(t, "" + i);
         }
+        Iterator<Map.Entry<Integer, String>> iterator = treeMap.entrySet().iterator();
+        for (; iterator.hasNext(); ) {
+            Map.Entry<Integer, String> entry = iterator.next();
+            if (entry.getKey() % 7 == 0) {
+                iterator.remove();
+                assertFalse(treeMap.containsKey(entry.getKey()));
+            }
+        }
+        Iterator<Map.Entry<Integer, String>> standardIterator = standardMap.entrySet().iterator();
+        for (; standardIterator.hasNext(); ) {
+            Map.Entry<Integer, String> stEntry = standardIterator.next();
+            if (stEntry.getKey() % 7 == 0)
+                assertFalse(treeMap.containsKey(stEntry.getKey()));
+        }
+
     }
 }
+

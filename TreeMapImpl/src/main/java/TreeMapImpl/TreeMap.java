@@ -6,7 +6,9 @@ import java.util.*;
 public class TreeMap<K extends Comparable, V> implements Map<K, V> {
     private Entry<K, V> root;
     private int size;
+    private int hashCode;
     private Entry<K, V> toolForIterator;
+    private long modCount = Long.MIN_VALUE;
 
     @Override
     public int size() {
@@ -21,12 +23,16 @@ public class TreeMap<K extends Comparable, V> implements Map<K, V> {
     @Override
     public boolean containsKey(Object key) {
         if (key == null)
-            throw new NullPointerException("This collection can't contain null keys");  //TODO key instance of
+            throw new NullPointerException("This collection can't contain null keys");
+        if (this.root == null)
+            return false;
+        if (!(key.getClass().isInstance(this.root.key)))
+            throw new ClassCastException("Passing parameter type doesn't correspond to the parametrized type of the collection");
 
         return containsKey((K) key, root);
     }
 
-    private boolean containsKey(K key, Entry curEntry) {
+    private boolean containsKey(K key, Entry<K, V> curEntry) {
         if (curEntry == null)
             return false;
         if (key.compareTo(curEntry.key) == 0)
@@ -42,10 +48,10 @@ public class TreeMap<K extends Comparable, V> implements Map<K, V> {
         if (root == null)
             return false;
 
-        return containsValue((V) value, root);
+        return containsValue(value, root);
     }
 
-    private boolean containsValue(V value, Entry curEntry) {
+    private boolean containsValue(Object value, Entry curEntry) {
         if (curEntry == null)
             return false;
         if (value.equals(curEntry.value))
@@ -55,14 +61,19 @@ public class TreeMap<K extends Comparable, V> implements Map<K, V> {
 
     @Override
     public V get(Object key) {
+        if (this.root == null)
+            return null;
+        if (!(key.getClass().isInstance(this.root.key)))
+            throw new ClassCastException("Passing parameter type doesn't correspond to the parametrized type of the collection");
+
         return get((K) key, root);
     }
 
-    private V get(K key, Entry curEntry) {
+    private V get(K key, Entry<K, V> curEntry) {
         if (curEntry == null)
             return null;
         if (key.compareTo(curEntry.key) == 0)
-            return (V) curEntry.value;
+            return curEntry.value;
         if (key.compareTo(curEntry.key) < 0)
             return get(key, curEntry.left);
         else
@@ -71,31 +82,40 @@ public class TreeMap<K extends Comparable, V> implements Map<K, V> {
 
     @Override
     public V put(K key, V value) {
-        Objects.requireNonNull(value, "Null value is not permitted");
+        Objects.requireNonNull(value, "Null key is not permitted");
         if (root == null) {
             root = new Entry(key, value);
             size++;
+            this.modCount += 1L;
+            this.hashCode += root.hashCode();
             return null;
         } else return put(key, value, root);
     }
 
-    private V put(K key, V value, Entry curEntry) {
+    private V put(K key, V value, Entry<K, V> curEntry) {
         if (key.compareTo(curEntry.key) == 0) {
-            V temp = (V) curEntry.value;
+            V temp = curEntry.value;
+            this.hashCode -= curEntry.hashCode();
             curEntry.value = value;
+            this.hashCode += curEntry.hashCode();
+            this.modCount += 1L;
             return temp;
         }
         if (key.compareTo(curEntry.key) < 0) {
             if (curEntry.left == null) {
                 curEntry.left = new Entry(key, value);
+                this.hashCode += curEntry.left.hashCode();
                 this.size++;
+                this.modCount += 1L;
                 return null;
             } else
                 return put(key, value, curEntry.left);
         } else {
             if (curEntry.right == null) {
                 curEntry.right = new Entry(key, value);
+                this.hashCode += curEntry.right.hashCode();
                 this.size++;
+                this.modCount += 1L;
                 return null;
             } else
                 return put(key, value, curEntry.right);
@@ -104,12 +124,22 @@ public class TreeMap<K extends Comparable, V> implements Map<K, V> {
 
     @Override
     public V remove(Object key) {
-        if (root == null)
+        if (this.root == null)
             return null;
-        return remove((K) key, root, root);
+        if (!(key.getClass().isInstance(this.root.key)))
+            throw new ClassCastException("Passing parameter type doesn't correspond to the parametrized type of the collection");
+
+        Entry<K, V> remEntry = remove((K) key, root, root);
+        if (remEntry != null) {
+            this.size--;
+            this.modCount += 1L;
+            this.hashCode -= remEntry.hashCode();
+            return remEntry.value;
+        } else
+            return null;
     }
 
-    private V remove(K key, Entry curEntry, Entry prevEntry) {
+    private Entry<K, V> remove(K key, Entry<K, V> curEntry, Entry<K, V> prevEntry) {
         if (curEntry == null)
             return null;
 
@@ -121,8 +151,7 @@ public class TreeMap<K extends Comparable, V> implements Map<K, V> {
                     prevEntry.right = null;
                 if (curEntry == root)
                     root = null;
-                size--;
-                return (V) curEntry.value;
+                return curEntry;
 
             } else if (curEntry.right == null) {
                 if (curEntry == prevEntry.left)
@@ -131,16 +160,14 @@ public class TreeMap<K extends Comparable, V> implements Map<K, V> {
                     prevEntry.right = curEntry.left;
                 if (curEntry == root)
                     root = curEntry.left;
-                size--;
-                return (V) curEntry.value;
+                return curEntry;
 
             } else if (curEntry.right != null) {
                 if (curEntry == prevEntry.left) {
                     if (curEntry.right.left == null) {
                         prevEntry.left = curEntry.right;
                         prevEntry.left.left = curEntry.left;
-                        size--;
-                        return (V) curEntry.value;
+                        return curEntry;
                     }
                     prevEntry.left = findReplacementInTheRightChild(curEntry.right, curEntry.right);
                     prevEntry.left.left = curEntry.left;
@@ -151,8 +178,7 @@ public class TreeMap<K extends Comparable, V> implements Map<K, V> {
                     if (curEntry.right.left == null) {
                         prevEntry.right = curEntry.right;
                         prevEntry.right.left = curEntry.left;
-                        size--;
-                        return (V) curEntry.value;
+                        return curEntry;
                     }
                     prevEntry.right = findReplacementInTheRightChild(curEntry.right, curEntry.right);
                     prevEntry.right.left = curEntry.left;
@@ -163,15 +189,13 @@ public class TreeMap<K extends Comparable, V> implements Map<K, V> {
                     if (root.right.left == null) {
                         root = root.right;
                         root.left = curEntry.left;
-                        size--;
-                        return (V) root.value;
+                        return root;
                     }
                     root = findReplacementInTheRightChild(curEntry.right, curEntry.right);
                     root.left = curEntry.left;
                     root.right = curEntry.right;
                 }
-                size--;
-                return (V) curEntry.value;
+                return curEntry;
             }
         }
         if (key.compareTo(curEntry.key) < 0)
@@ -208,39 +232,30 @@ public class TreeMap<K extends Comparable, V> implements Map<K, V> {
 
     @Override
     public int hashCode() {
-        return 5;
+        return this.hashCode;
     }
 
     @Override
     public void clear() {
         this.size = 0;
         root = null;
-
+        this.modCount += 1L;
     }
 
     @Override
     public Set<K> keySet() {
-        return null;
+        return this.new KeySet();
     }
 
     @Override
     public Collection<V> values() {
-        return null;
+        return this.new ValuesCollection();
     }
-
-/*    private void entrySet(Map.Entry<K, V> curEntry, Set<Map.Entry<K,V>> entrySet) {
-        if (curEntry == null)
-            return;
-        entrySet(curNode.left, arr);
-        arr[size++] = curNode.value;
-        toArr(curNode.right, arr);
-    }*/
 
     @Override
     public Set<Map.Entry<K, V>> entrySet() {
         return new EntrySet();
     }
-
 
     public class Entry<K, V> implements Map.Entry<K, V> {
         private final K key;
@@ -300,11 +315,12 @@ public class TreeMap<K extends Comparable, V> implements Map<K, V> {
         }
     }
 
-    private class EntrySet implements Set<Map.Entry<K, V>> {
+    private class EntrySet extends AbstractSet<Map.Entry<K, V>> {
+        private long modCount = TreeMap.this.modCount;
 
         @Override
         public Iterator<Map.Entry<K, V>> iterator() {
-            return new LazyIterator();
+            return this.new LazyEntrySetIterator();
         }
 
         @Override
@@ -325,16 +341,6 @@ public class TreeMap<K extends Comparable, V> implements Map<K, V> {
         }
 
         @Override
-        public <T> T[] toArray(T[] a) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public boolean add(Map.Entry<K, V> kvEntry) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
         public int size() {
             return TreeMap.this.size;
         }
@@ -342,41 +348,6 @@ public class TreeMap<K extends Comparable, V> implements Map<K, V> {
         @Override
         public boolean isEmpty() {
             return TreeMap.this.size == 0;
-        }
-
-        @Override
-        public boolean contains(Object o) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public boolean remove(Object o) {
-
-            return false;
-        }
-
-        @Override
-        public boolean containsAll(Collection<?> c) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public boolean addAll(Collection<? extends Map.Entry<K, V>> c) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public boolean retainAll(Collection<?> c) {
-            return false;
-        }
-
-        @Override
-        public boolean removeAll(Collection<?> c) {
-            return false;
-        }
-
-        @Override
-        public void clear() {
         }
 
         @Override
@@ -394,54 +365,182 @@ public class TreeMap<K extends Comparable, V> implements Map<K, V> {
             }
             return result;
         }
-    }
 
-    private class LazyIterator implements Iterator<Map.Entry<K, V>> {
-        private Deque<Entry<K, V>> deque = new LinkedList<>();
 
-        Entry<K, V> curEntry = null;
+        private class LazyEntrySetIterator implements Iterator<Map.Entry<K, V>> {
+            private Deque<Entry<K, V>> deque = new LinkedList<>();
+            Entry<K, V> curEntry = null;
 
-        {
-            deque.add(root);
-        }
+            {
+                deque.add(root);
+            }
 
-        @Override
-        public boolean hasNext() {
-            return !deque.isEmpty() && !(deque.peekFirst() == null && deque.size() == 1);
-        }
+            @Override
+            public boolean hasNext() {
+                return !deque.isEmpty() && !(deque.peekFirst() == null && deque.size() == 1);
+            }
 
-        @Override
-        public Map.Entry<K, V> next() {
-            while (!deque.isEmpty()) {
-                if (deque.peekFirst() != null && deque.peekFirst().left != null) {
-                    deque.addFirst(deque.peekFirst().left);
-                    continue;
-                }
-                if (deque.peekFirst() == null) {
-                    deque.pollFirst();
+            @Override
+            public Map.Entry<K, V> next() {
+                if (EntrySet.this.modCount != TreeMap.this.modCount)
+                    throw new ConcurrentModificationException();
+                while (!deque.isEmpty()) {
+                    if (deque.peekFirst() != null && deque.peekFirst().left != null) {
+                        deque.addFirst(deque.peekFirst().left);
+                        continue;
+                    }
+                    if (deque.peekFirst() == null) {
+                        deque.pollFirst();
+                        this.curEntry = deque.pollFirst();
+                        deque.addFirst(curEntry.right);
+                        break;
+                    }
                     this.curEntry = deque.pollFirst();
                     deque.addFirst(curEntry.right);
                     break;
                 }
-                this.curEntry = deque.pollFirst();
-                deque.addFirst(curEntry.right);
-                break;
-            }
-            return curEntry;
-        }
-
-        @Override
-        public void remove() {
-            TreeMap.this.remove(curEntry.key);
-            if (TreeMap.this.toolForIterator != null) {
-                deque.addFirst(TreeMap.this.toolForIterator);
-                deque.addFirst(null);
-                TreeMap.this.toolForIterator=null;
+                return curEntry;
             }
 
+            @Override
+            public void remove() {
+                if (TreeMap.this.remove(curEntry.key) != null)
+                    TreeMap.this.modCount -= 1L;
+                if (TreeMap.this.toolForIterator != null) {
+                    deque.addFirst(TreeMap.this.toolForIterator);
+                    deque.addFirst(null);
+                    TreeMap.this.toolForIterator = null;
+                }
+            }
         }
     }
 
+    private class KeySet extends AbstractSet<K> {
+        private long modCount = TreeMap.this.modCount;
+
+        @Override
+        public Iterator<K> iterator() {
+            return this.new LazyKeySetIterator();
+        }
+
+        @Override
+        public int size() {
+            return TreeMap.this.size;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return TreeMap.this.size == 0;
+        }
+
+        private class LazyKeySetIterator implements Iterator<K> {
+            private Deque<Entry<K, V>> deque = new LinkedList<>();
+            Entry<K, V> curEntry = null;
+
+            {
+                deque.add(TreeMap.this.root);
+            }
+
+            @Override
+            public boolean hasNext() {
+                return !deque.isEmpty() && !(deque.peekFirst() == null && deque.size() == 1);
+            }
+
+            @Override
+            public K next() {
+                if (KeySet.this.modCount != TreeMap.this.modCount)
+                    throw new ConcurrentModificationException();
+                while (!deque.isEmpty()) {
+                    if (deque.peekFirst() != null && deque.peekFirst().left != null) {
+                        deque.addFirst(deque.peekFirst().left);
+                        continue;
+                    }
+                    if (deque.peekFirst() == null) {
+                        deque.pollFirst();
+                        this.curEntry = deque.pollFirst();
+                        deque.addFirst(curEntry.right);
+                        break;
+                    }
+                    this.curEntry = deque.pollFirst();
+                    deque.addFirst(curEntry.right);
+                    break;
+                }
+                return curEntry.key;
+            }
+
+            @Override
+            public void remove() {
+                if (TreeMap.this.remove(curEntry.key) != null)
+                    TreeMap.this.modCount -= 1L;
+                if (TreeMap.this.toolForIterator != null) {
+                    deque.addFirst(TreeMap.this.toolForIterator);
+                    deque.addFirst(null);
+                    TreeMap.this.toolForIterator = null;
+                }
+            }
+        }
+    }
+
+    private class ValuesCollection extends AbstractCollection<V> {
+        private long modCount = TreeMap.this.modCount;
+
+        @Override
+        public Iterator<V> iterator() {
+            return this.new LazyValuesIterator();
+        }
+
+        @Override
+        public int size() {
+            return TreeMap.this.size;
+        }
+
+        private class LazyValuesIterator implements Iterator<V> {
+            private Deque<Entry<K, V>> deque = new LinkedList<>();
+            Entry<K, V> curEntry = null;
+
+            {
+                deque.add(TreeMap.this.root);
+            }
+
+            @Override
+            public boolean hasNext() {
+                return !deque.isEmpty() && !(deque.peekFirst() == null && deque.size() == 1);
+            }
+
+            @Override
+            public V next() {
+                if (ValuesCollection.this.modCount != TreeMap.this.modCount)
+                    throw new ConcurrentModificationException();
+                while (!deque.isEmpty()) {
+                    if (deque.peekFirst() != null && deque.peekFirst().left != null) {
+                        deque.addFirst(deque.peekFirst().left);
+                        continue;
+                    }
+                    if (deque.peekFirst() == null) {
+                        deque.pollFirst();
+                        this.curEntry = deque.pollFirst();
+                        deque.addFirst(curEntry.right);
+                        break;
+                    }
+                    this.curEntry = deque.pollFirst();
+                    deque.addFirst(curEntry.right);
+                    break;
+                }
+                return curEntry.value;
+            }
+
+            @Override
+            public void remove() {
+                if (TreeMap.this.remove(curEntry.key) != null)
+                    TreeMap.this.modCount -= 1L;
+                if (TreeMap.this.toolForIterator != null) {
+                    deque.addFirst(TreeMap.this.toolForIterator);
+                    deque.addFirst(null);
+                    TreeMap.this.toolForIterator = null;
+                }
+            }
+        }
+    }
 }
 
 

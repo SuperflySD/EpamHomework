@@ -9,9 +9,15 @@ public class HashMap<K, V> implements Map<K, V> {
     private float loadFactor = 0.75f;
     private long modCount = Long.MIN_VALUE;
 
-    {
+
+    public HashMap() {
         for (int i = 0; i < this.capacity; i++)
             this.data[i] = new LinkedList();
+    }
+
+    public HashMap(float loadFactor) {
+        this();
+        this.loadFactor = loadFactor;
     }
 
     @Override

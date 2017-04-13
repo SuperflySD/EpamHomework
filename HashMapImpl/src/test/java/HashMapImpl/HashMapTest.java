@@ -9,7 +9,7 @@ import static org.junit.Assert.*;
 
 
 public class HashMapTest {
-    HashMap<Integer, String> hashMap = new HashMap<>();
+    HashMap<Integer, String> hashMap = new HashMap<>(0.99f);
 
     @Test
     public void size() throws Exception {
